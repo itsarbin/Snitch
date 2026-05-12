@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import passport from "passport";
 
 const userSchema = new mongoose.Schema({
     fullName:{
@@ -28,7 +27,7 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-userSchema.pre('save', async ()=>{
+userSchema.pre('save', async function (){
     if(!this.isModified('password')) return;
     
     const hash = await bcrypt.hash(this.password, 10);

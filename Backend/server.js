@@ -1,11 +1,17 @@
 import app from "./src/app.js";
 import connectDB from "./src/config/db.js";
 
-// Connect to MongoDB
-connectDB();
+const PORT = 3000;
 
+try {
+  await connectDB();
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+} catch (error) {
+  console.error("Failed to start server. MongoDB connection failed.");
+  console.error(error.message);
+  process.exit(1);
+}
 
