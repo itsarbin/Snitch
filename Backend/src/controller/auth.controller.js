@@ -61,3 +61,33 @@ export const register = async (req, res)=>{
         })
     }
 }
+
+export const login = async (req,res)=>{
+    const {email,password} = req.body;
+
+    try{
+        const user = await userModel.findOne({email}).select('+password');
+
+        if(!user){
+            return res.status(400).json({
+                message: "Invalid email or password"
+            })
+        }
+
+        const isMatch = await user.comparePassword(password);
+        if(!isMatch){
+            return res.status(400).json({
+                message: "Invalid email or password"
+            })
+        }
+
+        sendTokenResponse(user,res,"Login successful")
+        
+    }catch(err){
+        console.log(err);
+        res.status(500).json({
+            message: "Internal server error",
+            error: err.message
+        })
+    }
+}

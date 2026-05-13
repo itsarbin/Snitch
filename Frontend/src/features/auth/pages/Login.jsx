@@ -1,41 +1,36 @@
 import { useState } from 'react';
-import { useAuth } from '../hook/useAuth';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../hook/useAuth';
 
-const Register = () => {
- const navigate = useNavigate()
-  const {handleRegister} = useAuth()
+const Login = () => {
+  const navigate = useNavigate()
+  const {handleLogin} = useAuth()
   const [formData, setFormData] = useState({
-    fullName: '',
     email: '',
     password: '',
-    contactNumber: '',
-    isSeller: false,
   });
 
   const handleChange = (event) => {
-    const { name, value, type, checked } = event.target;
+    const { name, value } = event.target;
 
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e)=>{
     e.preventDefault()
-    try{
-
-      const {fullName,email,password,contactNumber,isSeller} = formData
-      const response = await handleRegister({fullName,email,password,contact: contactNumber,isSeller})
+    try {
+      const {email,password} = formData
+      const response = await handleLogin({email,password})
       if(response && response.success){
         navigate('/')
-  
-      }else{
-        console.log('Registration failed:', response?.message || 'Unknown error')
+      } else {
+        console.error('Login failed:', response?.message || 'Unknown error')
       }
-    }catch(err){
-      console.log('Registration Error:', err.message)
+    } catch (error) {
+      console.error('Login error:', error.message)
     }
   }
 
@@ -65,11 +60,11 @@ const Register = () => {
       <main className="flex h-screen w-full pt-[72px]">
         {/* Left Photography Column */}
         <div className="hidden lg:block w-1/2 h-full relative overflow-hidden">
-          <img alt="High-fashion urban editorial" className="w-full h-full object-cover grayscale brightness-75 contrast-125" src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop" />
+          <img alt="High-fashion urban editorial" className="w-full h-full object-cover grayscale brightness-75 contrast-125" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
           <div className="absolute bottom-xl left-margin-desktop">
             <p className="font-headline-sm text-headline-sm text-primary-container mb-xs">THE ARCHIVE</p>
-            <p className="font-label-caps text-label-caps text-on-surface tracking-[0.3em]">FW24 REGISTRATION OPEN</p>
+            <p className="font-label-caps text-label-caps text-on-surface tracking-[0.3em]">FW24 LOGIN</p>
           </div>
         </div>
 
@@ -77,15 +72,11 @@ const Register = () => {
         <div className="w-full lg:w-1/2 h-full flex flex-col bg-surface overflow-y-auto scrollbar-hide px-margin-mobile md:px-margin-desktop">
           <div className="flex-grow flex flex-col justify-center max-w-[480px] mx-auto w-full py-md">
             <header className="mb-md">
-              <h1 className="font-display-lg text-display-lg-mobile md:text-headline-md mb-xs text-on-surface">Join the Collective.</h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant">Access exclusive drops, private archives, and early pre-orders.</p>
+              <h1 className="font-display-lg text-display-lg-mobile md:text-headline-md mb-xs text-on-surface">Welcome Back.</h1>
+              <p className="font-body-lg text-body-lg text-on-surface-variant">Sign in to access your exclusive drops.</p>
             </header>
 
             <form className="space-y-md" onSubmit={handleSubmit}>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Full Name</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="fullName" placeholder="ALEXANDER VANCE" type="text" value={formData.fullName} onChange={handleChange} />
-              </div>
               <div className="group relative">
                 <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Email Address</label>
                 <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="email" placeholder="AVANCE@STUDIO.COM" type="email" value={formData.email} onChange={handleChange} />
@@ -94,27 +85,17 @@ const Register = () => {
                 <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Password</label>
                 <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="password" placeholder="••••••••••••" type="password" value={formData.password} onChange={handleChange} />
               </div>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Contact Number</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="contactNumber" placeholder="+44 7700 900000" type="tel" value={formData.contactNumber} onChange={handleChange} />
-              </div>
 
-              <div className="flex items-center gap-md py-sm">
-                <div className="relative flex items-center">
-                  <input className="peer h-5 w-5 appearance-none border border-outline bg-transparent transition-all checked:bg-primary-container checked:border-primary-container cursor-pointer rounded-xs" id="seller" name="isSeller" type="checkbox" checked={formData.isSeller} onChange={handleChange} />
-                  <span className="material-symbols-outlined absolute pointer-events-none opacity-0 peer-checked:opacity-100 text-surface-container-lowest text-sm left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ fontVariationSettings: "'wght' 700" }}>check</span>
-                </div>
-                <label className="font-label-md text-label-md text-on-surface cursor-pointer select-none" htmlFor="seller">Register as Seller</label>
-              </div>
+              <div className="pt-sm pb-md"></div>
 
               <button className="w-full bg-primary-container text-on-primary-container py-md font-label-caps text-label-caps hover:bg-primary-fixed transition-colors active:scale-[0.98] duration-200" type="submit">
-                REGISTER
+                SIGN IN
               </button>
             </form>
 
             <div className="mt-lg text-center">
               <p className="font-label-md text-label-md text-on-surface-variant">
-                ALREADY HAVE AN ACCOUNT? <a className="text-primary-container hover:underline underline-offset-4 ml-xs" href="/login">SIGN IN</a>
+                DON'T HAVE AN ACCOUNT? <a className="text-primary-container hover:underline underline-offset-4 ml-xs" href="/register">REGISTER</a>
               </p>
             </div>
           </div>
@@ -136,4 +117,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
