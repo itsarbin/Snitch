@@ -91,3 +91,16 @@ export const login = async (req,res)=>{
         })
     }
 }
+
+export const googleAuthCallback = async (req,res)=>{
+    try{
+        console.log(req.user)
+        res.redirect('http://localhost:5173')
+    }catch(err){
+        console.log(err);
+        res.status(500).json({
+            message: "Internal server error",
+            error: err.message
+        })
+    }
+}
