@@ -92,15 +92,30 @@ export const login = async (req,res)=>{
     }
 }
 
+
 export const googleAuthCallback = async (req,res)=>{
-    try{
-        console.log(req.user)
-        res.redirect('http://localhost:5173')
-    }catch(err){
-        console.log(err);
-        res.status(500).json({
-            message: "Internal server error",
-            error: err.message
+    const {id,displayName, emails, photos} = req.user;
+
+    let user = await userModel.findOne({email: emails[0].value});
+
+    if(!user){
+        user = await userModel.create({
+            fullName: displayName,
+            email: emails[0].value,
+            googleId: id,
         })
     }
+
+    const token = jwt.sign({
+        id: user._id,
+    }, Config.JWT_SECRET,{
+        expiresIn: "7d"
+    })
+
+    res.cookie("token", token)
+    console.log(user)
+           
+            
+
+    res.redirect('http://localhost:5173')
 }
