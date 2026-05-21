@@ -1,6 +1,6 @@
 import {useDispatch} from 'react-redux'
 import { setSellerProducts } from '../state/product.slice'
-import { createProduct, getSellerProducts} from '../service/product.api'
+import { createProduct, getSellerProducts} from '../services/product.api'
 
 
 export  const useProduct = ()=>{
@@ -10,7 +10,7 @@ export  const useProduct = ()=>{
     const handleCreateNewProduct = async(formData)=>{
         try{
             const data = await createProduct(formData);
-            return data.product
+            return data
         }catch(error){
             console.error('Error creating product:', error);
             throw error;

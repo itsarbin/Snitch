@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { set } from "mongoose";
+
 
 const productSlice = createSlice({
     name:'product',
