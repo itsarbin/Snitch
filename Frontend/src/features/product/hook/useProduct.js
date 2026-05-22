@@ -20,7 +20,7 @@ export  const useProduct = ()=>{
     const handleFetchSellerProducts = async()=>{
         try{
             const data = await getSellerProducts();
-            dispatch(setSellerProducts(data.sellerProducts))
+            dispatch(setSellerProducts(data.products))
             return data.products
         }catch(error){
             console.error('Error fetching seller products:', error);
