@@ -1,6 +1,6 @@
 import {useDispatch} from 'react-redux'
-import { setSellerProducts } from '../state/product.slice'
-import { createProduct, getSellerProducts} from '../services/product.api'
+import { setSellerProducts, setAllProducts } from '../state/product.slice'
+import { createProduct, getSellerProducts,getAllProducts} from '../services/product.api'
 
 
 export  const useProduct = ()=>{
@@ -28,5 +28,15 @@ export  const useProduct = ()=>{
         }
     }
 
-    return { handleCreateNewProduct, handleFetchSellerProducts };
+    const handleFetchAllProducts = async()=>{
+        try{
+            const data = await getAllProducts();
+            dispatch(setAllProducts(data.products))
+        }catch(error){
+            console.error("Error Fetching all products:", error);
+            throw error;
+        }
+    }
+
+    return { handleCreateNewProduct, handleFetchSellerProducts, handleFetchAllProducts };
 }

@@ -66,3 +66,22 @@ export const getSellerProducts = async (req, res) => {
     }
 
 }
+
+
+export const getAllProducts = async (req,res)=>{
+    try{
+        const products = await productModel.find().sort({ createdAt: -1 });
+
+        res.status(200).json({
+            message: "Products fetched successfully",
+            products,
+            success: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch products",
+            error: error.message,
+            success: false
+        })
+    }
+}

@@ -40,7 +40,7 @@ const CreateProduct = () => {
     const response = await handleCreateNewProduct(data);
 
     if (response.success){
-        navigate('/')
+        navigate('/seller/dashboard')
     }
 
     console.log('Submit:',  formData, images);

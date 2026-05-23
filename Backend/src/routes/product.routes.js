@@ -2,7 +2,7 @@ import productModel from "../model/product.model.js";
 import { Router } from "express";
 import { authenticateSeller } from "../middleware/auth.middleware.js";
 import { createProduct } from "../controller/product.controller.js";
-import { getSellerProducts } from "../controller/product.controller.js";
+import { getSellerProducts, getAllProducts } from "../controller/product.controller.js";
 import { validateCreateProduct } from "../validator/product.validator.js";
 import multer from "multer";
 const storage = multer.memoryStorage();
@@ -20,5 +20,8 @@ router.post('/', authenticateSeller, upload.array('images',7), validateCreatePro
 
 //fetch all the seller products
 router.get('/sellerProducts', authenticateSeller,getSellerProducts)
+
+//fetch all products
+router.get('/home',getAllProducts)
 
 export default router

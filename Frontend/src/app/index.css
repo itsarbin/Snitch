@@ -87,7 +87,7 @@
   body {
     background-color: var(--color-background);
     color: var(--color-on-surface);
-    @apply font-body-md overflow-hidden h-screen;
+    @apply font-body-md overflow-auto;
   }
   
   .material-symbols-outlined {

@@ -3,12 +3,13 @@ import Register from "../features/auth/pages/Register";
 import Login from "../features/auth/pages/Login";
 import CreateProduct from "../features/product/pages/CreateProduct";
 import SellerDashbord from "../features/product/pages/SellerDashbord";
+import Home from "../features/product/pages/Home";
 import Protected from "../features/auth/components/Protected";
 
 export const routes = createBrowserRouter([
     {
         path: '/',
-        element: <h1>Welcome to the Snitch</h1>
+        element: <Home />
     },
     {
         path: '/register',
