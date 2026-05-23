@@ -28,12 +28,11 @@ const Register = () => {
     try {
 
       const { fullName, email, password, contactNumber, isSeller } = formData
-      const response = await handleRegister({ fullName, email, password, contact: contactNumber, isSeller })
-      if (response && response.success) {
+      const user = await handleRegister({ fullName, email, password, contact: contactNumber, isSeller })
+      if(user.role === 'seller'){
+        navigate('/seller/dashboard')
+      } else if(user.role === 'buyer'){
         navigate('/')
-
-      } else {
-        console.log('Registration failed:', response?.message || 'Unknown error')
       }
     } catch (err) {
       console.log('Registration Error:', err.message)

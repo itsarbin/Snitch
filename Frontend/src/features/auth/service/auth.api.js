@@ -14,3 +14,8 @@ export const login = async ({email,password})=>{
     const response = await authApi.post('/login',{email,password})
     return response.data
 }
+
+export const getMe = async()=>{
+    const response = await authApi.get('/me')
+    return response.data
+}

@@ -1,4 +1,4 @@
-import { register,login } from "../service/auth.api";
+import { register,login, getMe } from "../service/auth.api";
 import { useDispatch } from "react-redux";
 import { setUser,setLoading,setError } from "../state/auth.slice";
 
@@ -11,7 +11,7 @@ export const useAuth = ()=>{
              const data = await register({fullName,email,password,contact,isSeller})
                 dispatch(setUser(data.user))
                 dispatch(setError(null))
-                return {success: true, user: data.user}
+                return data.user
         }catch (error) {
             const errorMessage = error.response?.data?.message || error.message || "Registration failed"
             dispatch(setError({
@@ -31,7 +31,7 @@ export const useAuth = ()=>{
             const data = await login({email,password})
             dispatch(setUser(data.user))
             dispatch(setError(null))
-            return {success: true, user: data.user}
+            return data.user
         }catch (error) {
             const errorMessage = error.response?.data?.message || error.message || "Login failed"
             dispatch(setError({
@@ -43,9 +43,28 @@ export const useAuth = ()=>{
         }
     } 
 
+    const handleGetMe = async()=>{
+        dispatch(setLoading(true))
+        try{
+            const data = await getMe()
+            dispatch(setUser(data.user))
+            dispatch(setError(null))
+            return {success: true, user: data.user}
+        }catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || "Failed to fetch user data"
+            dispatch(setError({
+                message: errorMessage
+            }))
+            return {success: false, message: errorMessage}
+        } finally {
+            dispatch(setLoading(false))
+        }
+    }
+
 
     return {
         handleRegister,
-        handleLogin
+        handleLogin,
+        handleGetMe
     }
 }

@@ -24,11 +24,12 @@ const Login = () => {
     e.preventDefault()
     try {
       const {email,password} = formData
-      const response = await handleLogin({email,password})
-      if(response && response.success){
+      const user = await handleLogin({email,password})
+      
+      if(user.role === 'seller'){
+        navigate('/seller/dashboard')
+      } else if(user.role === 'buyer'){
         navigate('/')
-      } else {
-        console.error('Login failed:', response?.message || 'Unknown error')
       }
     } catch (error) {
       console.error('Login error:', error.message)

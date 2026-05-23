@@ -119,3 +119,18 @@ export const googleAuthCallback = async (req,res)=>{
 
     res.redirect('http://localhost:5173')
 }
+
+export const getMe = async (req, res)=>{
+    const user = req.user;
+
+    if(!user){
+        return res.status(404).json({
+            message: "User not found"
+        })
+    }
+
+    res.status(200).json({
+        success: true,
+        user
+    })
+}
