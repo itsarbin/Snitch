@@ -1,5 +1,28 @@
 import mongoose from "mongoose";
 
+const productVariantSchema = new mongoose.Schema({
+    attributes:{
+        type: Map,
+        of: String
+    },
+    price:{
+        amount: String,
+        currency: String
+    },
+    stock:{
+        type: Number,
+        default: 0
+    },
+    images:[
+        {
+            url:{
+                type: String,
+            }
+        }
+    ]
+
+})
+
 const productSchema = new mongoose.Schema({
     title:{
         type:String,
@@ -32,7 +55,8 @@ const productSchema = new mongoose.Schema({
                 required:true
             }
         }
-    ]
+    ],
+    variants:[productVariantSchema]
     
 },
 {

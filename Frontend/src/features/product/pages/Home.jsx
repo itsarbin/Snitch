@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useProduct } from '../hook/useProduct'
+import { useNavigate } from 'react-router'
+
 
 /* ── icon helper ─────────────────────────────────────────────────── */
 const Icon = ({ d, size = 18, className = '' }) => (
@@ -12,10 +14,10 @@ const Icon = ({ d, size = 18, className = '' }) => (
 )
 const PATHS = {
   search: 'M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z',
-  cart:   'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0',
-  img:    'M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z',
-  arrow:  'M5 12h14M12 5l7 7-7 7',
-  bag:    'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z M3 6h18 M16 10a4 4 0 0 1-8 0',
+  cart: 'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0',
+  img: 'M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z',
+  arrow: 'M5 12h14M12 5l7 7-7 7',
+  bag: 'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z M3 6h18 M16 10a4 4 0 0 1-8 0',
 }
 
 /* ── Skeleton ────────────────────────────────────────────────────── */
@@ -32,7 +34,7 @@ const CardSkeleton = () => (
 )
 
 /* ── Product Card ────────────────────────────────────────────────── */
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onClick }) => {
   const [imgErr, setImgErr] = useState(false)
   const img = product.images?.[0]?.url
 
@@ -42,6 +44,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <article
+      onClick={onClick}
       className="group flex flex-col overflow-hidden cursor-pointer"
       style={{ backgroundColor: '#0f0f0f', border: '1px solid #1a1a1a', borderRadius: '2px' }}
     >
@@ -108,16 +111,17 @@ const ProductCard = ({ product }) => {
    HOME PAGE
 ════════════════════════════════════════════════════════════════════ */
 const Home = () => {
+  const navigate = useNavigate()
   const { handleFetchAllProducts } = useProduct()
   const allProducts = useSelector((state) => state.product.allProducts)
 
   const [loading, setLoading] = useState(true)
-  const [search,  setSearch]  = useState('')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       setLoading(true)
-      await handleFetchAllProducts().catch(() => {})
+      await handleFetchAllProducts().catch(() => { })
       setLoading(false)
     })()
   }, [])
@@ -125,9 +129,9 @@ const Home = () => {
   const products = allProducts || []
   const filtered = search.trim()
     ? products.filter(p =>
-        p.title?.toLowerCase().includes(search.toLowerCase()) ||
-        p.description?.toLowerCase().includes(search.toLowerCase())
-      )
+      p.title?.toLowerCase().includes(search.toLowerCase()) ||
+      p.description?.toLowerCase().includes(search.toLowerCase())
+    )
     : products
 
   return (
@@ -280,7 +284,10 @@ const Home = () => {
                   No products found
                 </div>
               )
-              : filtered.map(p => <ProductCard key={p._id} product={p} />)
+              : filtered.map(p => <ProductCard
+                key={p._id}
+                product={p}
+                onClick={() => navigate(`/product/${p._id}`)} />)
           }
         </div>
       </div>

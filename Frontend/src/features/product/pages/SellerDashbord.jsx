@@ -41,7 +41,7 @@ const Badge = ({ inStock }) => (
 )
 
 /* ── Product card ────────────────────────────────────────────────── */
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onClick }) => {
   const [err, setErr] = useState(false)
   const img     = product.images?.[0]?.url
   const inStock = product.stock !== 0
@@ -50,6 +50,7 @@ const ProductCard = ({ product }) => {
     <article
       className="group relative flex flex-col overflow-hidden transition-all duration-300"
       style={{ backgroundColor: '#0f0f0f', border: '1px solid #1c1c1c', borderRadius: '2px' }}
+      onClick={onClick}
     >
       {/* ── Image ── */}
       <div className="relative overflow-hidden shrink-0" style={{ aspectRatio: '3/4', backgroundColor: '#080808' }}>
@@ -335,7 +336,7 @@ const SellerDashbord = () => {
             ? Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} />)
             : filtered.length === 0
               ? <Empty onAdd={goCreate} />
-              : filtered.map(p => <ProductCard key={p._id} product={p} />)
+              : filtered.map(p => <ProductCard key={p._id} product={p}  onClick={() => navigate(`/seller/product/${p._id}`)} />)
           }
         </div>
 
