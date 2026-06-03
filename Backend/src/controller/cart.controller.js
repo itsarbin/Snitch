@@ -1,0 +1,65 @@
+import cartModel from '../model/cart.model.js'
+import productModel from '../model/product.model.js'
+import { variantStock } from '../dao/product.dao.js';
+
+export const addToCart = async (req, res) => {
+    const { productId, variantId } = req.body;
+
+    const product = await productModel.findById(productId);
+    if (!product) {
+        return res.status(404).json({ message: 'Product not found' })
+    }
+
+    const variant = product.variants.id(variantId);
+    if (!variant) {
+        return res.status(404).json({ message: 'Variant not found' })
+    }
+
+    let cart = await cartModel.findOne({ user: req.user._id }) || await cartModel.create({ user: req.user._id });
+
+    const existingItem = cart.items.find(item => item.product.toString() === productId && item.variant.toString() === variantId);
+
+   
+
+    const stock = variant.stock;
+    if (existingItem) {
+
+        const quantityInCart = existingItem.quantity;
+        if (quantityInCart + 1 > stock) {
+            return res.status(400).json({ message: 'Not enough stock available' })
+        }
+
+        existingItem.quantity += 1;
+
+        await cart.save();
+
+        return res.status(200).json({ message: 'Cart updated successfully', success: true });
+
+    } else {
+
+        if (stock < 1) {
+            return res.status(400).json({ message: 'Not enough stock available' })
+        }
+
+
+        cart.items.push({ product: productId, variant: variantId, quantity: 1, price: variant.price },);
+        await cart.save();
+        return res.status(200).json({ message: 'Item added to cart successfully', success: true,  });
+    }
+
+}
+
+export const getCart = async (req, res) => {
+    const user = req.user._id;
+    const cart = await cartModel.findOne({user}).populate('items.product')
+    if(!cart){
+        return res.status(404).json({message: 'Cart not found'})
+    }
+    return res.status(200).json({
+        message: 'Cart retrieved successfully',
+        success: true,
+        cart
+    }
+    )
+}
+
