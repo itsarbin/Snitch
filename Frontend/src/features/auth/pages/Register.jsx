@@ -1,147 +1,362 @@
-import { useState } from 'react';
-import { useAuth } from '../hook/useAuth';
-import { useNavigate } from 'react-router';
-import ContinueWithGoogle from '../components/ContinueWithGoogle';
+import { useState } from 'react'
+import { useAuth } from '../hook/useAuth'
+import { useNavigate } from 'react-router'
+import ContinueWithGoogle from '../components/ContinueWithGoogle'
 
+/* ─── shared tokens ──────────────────────────────────────────────── */
+const C = {
+  bg:       '#fdf9f3',
+  surface:  '#f1ede7',
+  sand:     '#e8d5b7',
+  outline:  '#d4c3ba',
+  espresso: '#3b1f0c',
+  walnut:   '#7b4a2d',
+  caramel:  '#c17a3f',
+  muted:    '#50443e',
+  faint:    '#82746d',
+  serif:    "'EB Garamond', Georgia, serif",
+  sans:     "'DM Sans', system-ui, sans-serif",
+}
+
+/* ─── reusable form field ────────────────────────────────────────── */
+const Field = ({ label, type = 'text', name, value, onChange, placeholder }) => {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <label style={{
+        fontFamily: C.sans, fontSize: '10px', fontWeight: 600,
+        letterSpacing: '0.22em', textTransform: 'uppercase',
+        color: focused ? C.caramel : C.faint,
+        transition: 'color 0.2s',
+      }}>
+        {label}
+      </label>
+      <input
+        type={type} name={name} value={value}
+        onChange={onChange} placeholder={placeholder}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          fontFamily: C.sans, fontSize: '14px', fontWeight: 300,
+          letterSpacing: '0.03em', color: C.espresso,
+          background: 'transparent', border: 'none', outline: 'none',
+          borderBottom: `1px solid ${focused ? C.caramel : C.outline}`,
+          padding: '8px 0 10px',
+          transition: 'border-color 0.25s',
+          width: '100%',
+        }}
+      />
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   REGISTER PAGE
+═══════════════════════════════════════════════════════════════════ */
 const Register = () => {
   const navigate = useNavigate()
   const { handleRegister } = useAuth()
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    contactNumber: '',
-    isSeller: false,
-  });
+    fullName: '', email: '', password: '',
+    contactNumber: '', isSeller: false,
+  })
+  const [loading, setLoading] = useState(false)
 
-  const handleChange = (event) => {
-    const { name, value, type, checked } = event.target;
-
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
     try {
-
       const { fullName, email, password, contactNumber, isSeller } = formData
       const user = await handleRegister({ fullName, email, password, contact: contactNumber, isSeller })
-      if(user.role === 'seller'){
-        navigate('/seller/dashboard')
-      } else if(user.role === 'buyer'){
-        navigate('/')
-      }
+      if (user.role === 'seller') navigate('/seller/dashboard')
+      else if (user.role === 'buyer') navigate('/')
     } catch (err) {
       console.log('Registration Error:', err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
-
   return (
-    <>
-      {/* TopNavBar */}
-      <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-md max-w-container-max mx-auto bg-surface-dim/90 backdrop-blur-md">
-        <div className="font-display-lg text-display-lg-mobile md:text-headline-md tracking-tighter text-primary-container">SNITCH</div>
-        <div className="hidden md:flex items-center gap-xl">
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">Collections</a>
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">New Arrivals</a>
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">Archive</a>
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">Journal</a>
-        </div>
-        <div className="flex items-center gap-lg">
-          <button className="active:scale-95 transition-transform duration-200">
-            <span className="material-symbols-outlined text-on-surface hover:text-primary-container transition-all duration-300">search</span>
-          </button>
-          <button className="active:scale-95 transition-transform duration-200">
-            <span className="material-symbols-outlined text-on-surface hover:text-primary-container transition-all duration-300">shopping_bag</span>
-          </button>
-        </div>
-      </nav>
+    <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden', fontFamily: C.sans }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        input::placeholder { color: ${C.outline}; }
+        .auth-submit:hover { background: ${C.walnut} !important; transform: translateY(-1px); }
+        .auth-submit:active { transform: translateY(0); }
+        .auth-link:hover { color: ${C.espresso} !important; }
+        .reg-scrollbar::-webkit-scrollbar { width: 4px; }
+        .reg-scrollbar::-webkit-scrollbar-track { background: ${C.bg}; }
+        .reg-scrollbar::-webkit-scrollbar-thumb { background: ${C.outline}; }
+      `}</style>
 
-      {/* Main Content: Registration Split Screen */}
-      <main className="flex h-screen w-full pt-[72px]">
-        {/* Left Photography Column */}
-        <div className="hidden lg:block w-1/2 h-full relative overflow-hidden">
-          <img alt="High-fashion urban editorial" className="w-full h-full object-cover grayscale brightness-75 contrast-125" src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
-          <div className="absolute bottom-xl left-margin-desktop">
-            <p className="font-headline-sm text-headline-sm text-primary-container mb-xs">THE ARCHIVE</p>
-            <p className="font-label-caps text-label-caps text-on-surface tracking-[0.3em]">FW24 REGISTRATION OPEN</p>
-          </div>
-        </div>
+      {/* ── LEFT: Narrow visual column (40%) ─────────────────────── */}
+      <div style={{
+        width: '40%', flexShrink: 0,
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <img
+          src="/auth_register.png"
+          alt="Snitch SS 2026 — Join the Collective"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+        />
+        {/* Gradient overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(18,6,2,0.88) 0%, rgba(18,6,2,0.3) 50%, transparent 75%)',
+        }} />
 
-        {/* Right Form Column */}
-        <div className="w-full lg:w-1/2 h-full flex flex-col bg-surface overflow-y-auto scrollbar-hide px-margin-mobile md:px-margin-desktop">
-          <div className="flex-grow flex flex-col justify-center max-w-[480px] mx-auto w-full py-md">
-            <header className="mb-md">
-              <h1 className="font-display-lg text-display-lg-mobile md:text-headline-md mb-xs text-on-surface">Join the Collective.</h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant">Access exclusive drops, private archives, and early pre-orders.</p>
-            </header>
+        {/* Bottom brand copy */}
+        <div style={{ position: 'absolute', bottom: '48px', left: '44px', right: '44px' }}>
+          <p style={{
+            fontFamily: C.serif, fontStyle: 'italic',
+            fontSize: '28px', fontWeight: 300,
+            color: C.bg, lineHeight: 1.2,
+            marginBottom: '16px',
+          }}>
+            Join the Collective.
+          </p>
 
-            <form className="space-y-md" onSubmit={handleSubmit}>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Full Name</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="fullName" placeholder="ALEXANDER VANCE" type="text" value={formData.fullName} onChange={handleChange} />
-              </div>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Email Address</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="email" placeholder="AVANCE@STUDIO.COM" type="email" value={formData.email} onChange={handleChange} />
-              </div>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Password</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="password" placeholder="••••••••••••" type="password" value={formData.password} onChange={handleChange} />
-              </div>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Contact Number</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="contactNumber" placeholder="+44 7700 900000" type="tel" value={formData.contactNumber} onChange={handleChange} />
-              </div>
+          <div style={{ width: '40px', height: '1px', backgroundColor: C.caramel, marginBottom: '14px' }} />
 
-              <div className="flex items-center gap-md py-sm">
-                <div className="relative flex items-center">
-                  <input className="peer h-5 w-5 appearance-none border border-outline bg-transparent transition-all checked:bg-primary-container checked:border-primary-container cursor-pointer rounded-xs" id="seller" name="isSeller" type="checkbox" checked={formData.isSeller} onChange={handleChange} />
-                  <span className="material-symbols-outlined absolute pointer-events-none opacity-0 peer-checked:opacity-100 text-surface-container-lowest text-sm left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ fontVariationSettings: "'wght' 700" }}>check</span>
-                </div>
-                <label className="font-label-md text-label-md text-on-surface cursor-pointer select-none" htmlFor="seller">Register as Seller</label>
-              </div>
+          <p style={{
+            fontFamily: C.sans, fontSize: '10px', fontWeight: 500,
+            letterSpacing: '0.26em', textTransform: 'uppercase',
+            color: C.sand, marginBottom: '20px',
+          }}>
+            SS 2026 · Members Access
+          </p>
 
-              <button className="w-full bg-primary-container text-on-primary-container py-md font-label-caps text-label-caps hover:bg-primary-fixed transition-colors active:scale-[0.98] duration-200" type="submit">
-                REGISTER
-              </button>
-
-              <div className="flex items-center gap-sm my-md">
-                <div className="flex-1 h-px bg-outline-variant"></div>
-                <span className="font-label-caps text-label-caps text-on-surface-variant">OR</span>
-                <div className="flex-1 h-px bg-outline-variant"></div>
-              </div>
-
-            <ContinueWithGoogle />
-            </form>
-
-            <div className="mt-lg text-center">
-              <p className="font-label-md text-label-md text-on-surface-variant">
-                ALREADY HAVE AN ACCOUNT? <a className="text-primary-container hover:underline underline-offset-4 ml-xs" href="/login">SIGN IN</a>
+          {/* Perks */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              'Early access to drops',
+              'Exclusive member pricing',
+              'Private lookbook archive',
+            ].map((perk) => (
+              <p key={perk} style={{
+                fontFamily: C.sans, fontSize: '11px', fontWeight: 300,
+                color: C.sand, letterSpacing: '0.04em',
+                display: 'flex', alignItems: 'center', gap: '8px',
+              }}>
+                <span style={{ color: C.caramel, fontSize: '10px' }}>✦</span>
+                {perk}
               </p>
-            </div>
+            ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT: Form column (60%) ──────────────────────────────── */}
+      <div
+        className="reg-scrollbar"
+        style={{
+          flex: 1, background: C.bg,
+          overflowY: 'auto',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        <div style={{
+          flex: 1,
+          padding: '32px 68px',
+          maxWidth: '540px', margin: '0 auto', width: '100%',
+        }}>
+
+          {/* Logo */}
+          <p style={{
+            fontFamily: C.serif,
+            fontSize: '22px', fontWeight: 400,
+            letterSpacing: '0.22em', textTransform: 'uppercase',
+            color: C.espresso, marginBottom: '24px',
+          }}>
+            Snitch
+          </p>
+
+          {/* Eyebrow */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '10px', fontWeight: 600,
+            letterSpacing: '0.28em', textTransform: 'uppercase',
+            color: C.caramel, marginBottom: '8px',
+          }}>
+            Create Account
+          </p>
+
+          {/* Headline */}
+          <h1 style={{
+            fontFamily: C.serif, fontStyle: 'italic',
+            fontSize: '34px', fontWeight: 300, lineHeight: 1.15,
+            color: C.espresso, marginBottom: '8px',
+          }}>
+            Begin your journey
+          </h1>
+
+          {/* Subtext */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '13px', fontWeight: 300,
+            lineHeight: 1.75, color: C.walnut,
+            marginBottom: '24px',
+          }}>
+            Access exclusive drops, private archives, and early pre-orders.
+          </p>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Field
+              label="Full Name"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              placeholder="Alexander Vance"
+            />
+            <Field
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+            />
+            <Field
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••••••"
+            />
+            <Field
+              label="Contact Number"
+              type="tel"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleChange}
+              placeholder="+91 98765 43210"
+            />
+
+            {/* Seller checkbox */}
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: '14px',
+              cursor: 'pointer', paddingTop: '4px',
+            }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <input
+                  type="checkbox"
+                  id="isSeller"
+                  name="isSeller"
+                  checked={formData.isSeller}
+                  onChange={handleChange}
+                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                />
+                <div style={{
+                  width: '18px', height: '18px',
+                  border: `1px solid ${formData.isSeller ? C.caramel : C.outline}`,
+                  background: formData.isSeller ? C.caramel : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                }}>
+                  {formData.isSeller && (
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M1.5 5L4 7.5L8.5 2.5" stroke={C.bg} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span style={{
+                fontFamily: C.sans, fontSize: '13px', fontWeight: 400,
+                color: C.espresso, userSelect: 'none',
+              }}>
+                Register as a Seller
+              </span>
+            </label>
+
+            {/* CTA */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="auth-submit"
+              style={{
+                marginTop: '4px',
+                fontFamily: C.sans, fontSize: '11px', fontWeight: 600,
+                letterSpacing: '0.22em', textTransform: 'uppercase',
+                background: C.espresso, color: C.bg,
+                border: 'none', padding: '16px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1,
+                transition: 'background 0.25s, transform 0.2s',
+                width: '100%',
+              }}
+            >
+              {loading ? 'Creating Account…' : 'Create Account'}
+            </button>
+
+            {/* OR divider */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ flex: 1, height: '1px', background: C.sand }} />
+              <span style={{
+                fontFamily: C.sans, fontSize: '10px', fontWeight: 500,
+                letterSpacing: '0.2em', color: C.faint,
+              }}>
+                OR
+              </span>
+              <div style={{ flex: 1, height: '1px', background: C.sand }} />
+            </div>
+
+            {/* Google */}
+            <ContinueWithGoogle />
+          </form>
+
+          {/* Sign in link */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '13px', fontWeight: 300,
+            color: C.walnut, marginTop: '20px', textAlign: 'center',
+          }}>
+            Already have an account?{' '}
+            <a
+              href="/login"
+              className="auth-link"
+              style={{
+                color: C.caramel, textDecoration: 'underline',
+                textUnderlineOffset: '3px', fontWeight: 400,
+                transition: 'color 0.2s',
+              }}
+            >
+              Sign in
+            </a>
+          </p>
 
           {/* Footer */}
-          <footer className="w-full py-md flex flex-col md:flex-row justify-between items-center gap-gutter border-t border-outline-variant mt-auto">
-            <div className="font-headline-sm text-headline-sm text-on-surface">SNITCH</div>
-            <div className="flex gap-lg flex-wrap justify-center">
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Privacy Policy</a>
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Terms of Service</a>
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Shipping &amp; returns</a>
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Contact</a>
-            </div>
-            <div className="font-label-md text-label-md text-on-surface-variant">© 2024 SNITCH CLOTHING. ALL RIGHTS RESERVED.</div>
-          </footer>
+          <div style={{
+            borderTop: `1px solid ${C.outline}`,
+            marginTop: '24px', paddingTop: '16px',
+            display: 'flex', justifyContent: 'space-between',
+            flexWrap: 'wrap', gap: '8px',
+          }}>
+            {['Privacy Policy', 'Terms of Service', 'Contact'].map((l) => (
+              <a key={l} href="#" style={{
+                fontFamily: C.sans, fontSize: '11px', color: C.faint,
+                textDecoration: 'none', letterSpacing: '0.04em',
+              }}
+              onMouseEnter={e => e.target.style.color = C.walnut}
+              onMouseLeave={e => e.target.style.color = C.faint}
+              >
+                {l}
+              </a>
+            ))}
+            <span style={{ fontFamily: C.sans, fontSize: '11px', color: C.faint, letterSpacing: '0.04em' }}>
+              © 2026 Snitch
+            </span>
+          </div>
         </div>
-      </main>
-    </>
-  );
-};
+      </div>
+    </div>
+  )
+}
 
-export default Register;
+export default Register

@@ -3,40 +3,105 @@ import { useNavigate } from 'react-router'
 import { useProduct } from '../hook/useProduct'
 import { useSelector } from 'react-redux'
 
+/* ── Design tokens ──────────────────────────────────────────────── */
+const T = {
+  bg:        '#fdf9f3',
+  espresso:  '#3b1f0c',
+  walnut:    '#7b4a2d',
+  caramel:   '#c17a3f',
+  sand:      '#e8d5b7',
+  outline:   '#d4c3ba',
+  faint:     '#82746d',
+  white:     '#ffffff',
+  surface:   '#f1ede7',
+}
+
+/* ── Google Fonts injection ─────────────────────────────────────── */
+const FontStyle = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    .snitch-search-input::placeholder { color: ${T.walnut}; opacity: 0.65; }
+    .snitch-search-input:focus { outline: none; border-bottom-color: ${T.caramel} !important; }
+
+    .snitch-chip-btn { cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .snitch-chip-btn:hover { opacity: 0.8; }
+
+    .snitch-create-btn { cursor: pointer; transition: background 0.18s; }
+    .snitch-create-btn:hover { background-color: ${T.walnut} !important; }
+    .snitch-create-btn:active { transform: scale(0.97); }
+
+    .snitch-card { cursor: pointer; transition: box-shadow 0.22s; }
+    .snitch-card:hover { box-shadow: 0 4px 24px rgba(59,31,12,0.10); }
+    .snitch-card:hover .snitch-card-top-border { transform: scaleX(1) !important; }
+    .snitch-card:hover .snitch-card-overlay { opacity: 1 !important; }
+    .snitch-card:hover .snitch-card-actions { opacity: 1 !important; }
+    .snitch-card:hover .snitch-card-img { transform: scale(1.04); }
+
+    .snitch-card-top-border { transition: transform 0.28s ease; transform-origin: left; }
+    .snitch-card-overlay    { transition: opacity 0.28s ease; }
+    .snitch-card-actions    { transition: opacity 0.28s ease; }
+    .snitch-card-img        { transition: transform 0.6s ease; }
+
+    .snitch-view-btn  { cursor: pointer; transition: opacity 0.15s; }
+    .snitch-view-btn:hover  { opacity: 0.82; }
+    .snitch-edit-btn  { cursor: pointer; transition: opacity 0.15s; }
+    .snitch-edit-btn:hover  { opacity: 0.72; }
+
+    .snitch-empty-btn { cursor: pointer; transition: background 0.18s; }
+    .snitch-empty-btn:hover { background-color: ${T.walnut} !important; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.45; }
+    }
+    .snitch-skeleton { animation: pulse 1.6s ease-in-out infinite; }
+  `}</style>
+)
+
 /* ── SVG icon helper ─────────────────────────────────────────────── */
-const Icon = ({ d, size = 18, className = '' }) => (
+const Icon = ({ d, size = 18, color = 'currentColor', style: extraStyle = {}, ...rest }) => (
   <svg
     width={size} height={size}
     viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth={1.8}
+    stroke={color} strokeWidth={1.8}
     strokeLinecap="round" strokeLinejoin="round"
-    className={className}
+    style={{ display: 'inline-block', flexShrink: 0, ...extraStyle }}
+    {...rest}
   >
     <path d={d} />
   </svg>
 )
 
 const PATHS = {
-  plus:    'M12 5v14M5 12h14',
-  search:  'M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z',
-  img:     'M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z',
-  eye:     'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
-  edit:    'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z',
-  box:     'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z',
-  layers:  'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
+  plus:   'M12 5v14M5 12h14',
+  search: 'M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z',
+  img:    'M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z',
+  eye:    'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  edit:   'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z',
+  box:    'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z',
+  layers: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
 }
 
 /* ── Status badge ────────────────────────────────────────────────── */
 const Badge = ({ inStock }) => (
   <span
-    className="text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-0.5 rounded-sm"
-    style={
-      inStock
-        ? { border: '1px solid rgba(52,211,153,0.5)', color: '#34d399', backgroundColor: 'rgba(52,211,153,0.06)' }
-        : { border: '1px solid rgba(239,68,68,0.45)', color: '#f87171', backgroundColor: 'rgba(239,68,68,0.06)' }
-    }
+    style={{
+      fontFamily: "'DM Sans', sans-serif",
+      fontSize: '8px',
+      fontWeight: 700,
+      letterSpacing: '0.15em',
+      textTransform: 'uppercase',
+      padding: '2px 7px',
+      borderRadius: '2px',
+      color:           inStock ? '#16a34a' : '#dc2626',
+      backgroundColor: inStock ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.07)',
+      border: `1px solid ${inStock ? 'rgba(22,163,74,0.35)' : 'rgba(220,38,38,0.35)'}`,
+    }}
   >
-    {inStock ? 'Active' : 'Out of stock'}
+    {inStock ? 'Active' : 'Out of Stock'}
   </span>
 )
 
@@ -48,117 +113,226 @@ const ProductCard = ({ product, onClick }) => {
 
   return (
     <article
-      className="group relative flex flex-col overflow-hidden transition-all duration-300"
-      style={{ backgroundColor: '#0f0f0f', border: '1px solid #1c1c1c', borderRadius: '2px' }}
+      className="snitch-card"
+      style={{
+        backgroundColor: T.white,
+        border: `1px solid ${T.outline}`,
+        borderRadius: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
       onClick={onClick}
     >
       {/* ── Image ── */}
-      <div className="relative overflow-hidden shrink-0" style={{ aspectRatio: '3/4', backgroundColor: '#080808' }}>
+      <div
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          flexShrink: 0,
+          aspectRatio: '3/4',
+          backgroundColor: T.surface,
+        }}
+      >
+        {/* caramel top border on hover */}
+        <div
+          className="snitch-card-top-border"
+          style={{
+            position: 'absolute',
+            inset: '0 0 auto 0',
+            height: '2px',
+            backgroundColor: T.caramel,
+            transform: 'scaleX(0)',
+            zIndex: 4,
+          }}
+        />
+
         {img && !err ? (
           <img
-            src={img} alt={product.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            src={img}
+            alt={product.title}
+            className="snitch-card-img"
             onError={() => setErr(true)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Icon d={PATHS.img} size={36} className="opacity-[0.12]" />
+          <div
+            style={{
+              width: '100%', height: '100%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Icon d={PATHS.img} size={36} color={T.walnut} style={{ opacity: 0.18 }} />
           </div>
         )}
 
-        {/* badge */}
-        <div className="absolute top-2.5 left-2.5">
+        {/* Status badge */}
+        <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 3 }}>
           <Badge inStock={inStock} />
         </div>
 
-        {/* hover overlay actions */}
+        {/* Hover overlay */}
         <div
-          className="absolute inset-0 flex items-end justify-center pb-4 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)' }}
+          className="snitch-card-overlay"
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to top, rgba(59,31,12,0.72) 0%, transparent 55%)',
+            opacity: 0,
+            zIndex: 2,
+          }}
+        />
+
+        {/* Hover action buttons */}
+        <div
+          className="snitch-card-actions"
+          style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            paddingBottom: '14px', gap: '8px',
+            opacity: 0, zIndex: 3,
+          }}
         >
           <button
-            className="flex items-center gap-1 text-[11px] font-semibold tracking-wider px-3 py-1.5 rounded-sm text-black transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#F5C518' }}
+            className="snitch-view-btn"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '4px',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: '6px 12px',
+              borderRadius: 0,
+              backgroundColor: T.caramel,
+              color: T.espresso,
+              border: 'none',
+            }}
           >
-            <Icon d={PATHS.eye} size={11} /> View
+            <Icon d={PATHS.eye} size={11} color={T.espresso} /> View
           </button>
           <button
-            className="flex items-center gap-1 text-[11px] font-semibold tracking-wider px-3 py-1.5 rounded-sm text-white transition-opacity hover:opacity-70"
-            style={{ border: '1px solid rgba(255,255,255,0.25)' }}
+            className="snitch-edit-btn"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '4px',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: '6px 12px',
+              borderRadius: 0,
+              backgroundColor: 'transparent',
+              color: T.bg,
+              border: `1px solid rgba(253,249,243,0.5)`,
+            }}
           >
-            <Icon d={PATHS.edit} size={11} /> Edit
+            <Icon d={PATHS.edit} size={11} color={T.bg} /> Edit
           </button>
         </div>
-
-        {/* gold top-line on hover */}
-        <div
-          className="absolute inset-x-0 top-0 h-[2px] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"
-          style={{ backgroundColor: '#F5C518' }}
-        />
       </div>
 
       {/* ── Info ── */}
-      <div className="flex flex-col gap-0.5 px-3 py-3">
+      <div style={{ padding: '12px 12px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
         <h3
-          className="text-sm font-semibold leading-snug line-clamp-1"
-          style={{ fontFamily: "'Playfair Display', serif", color: '#f0f0f0' }}
+          style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: '13px', fontWeight: 500,
+            color: T.espresso,
+            lineHeight: 1.3,
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+          }}
         >
           {product.title}
         </h3>
 
-        <div className="flex items-center justify-between mt-1.5">
-          <span className="text-base font-bold" style={{ color: '#F5C518' }}>
-            ₹{Number(product.price?.amount).toLocaleString('en-IN')}
-            <span className="text-[10px] font-normal ml-1" style={{ color: '#444' }}>
-              {product.price?.currency || 'INR'}
-            </span>
-          </span>
-
-          {product.images?.length > 1 && (
-            <span
-              className="text-[9px] font-semibold tracking-wider px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: '#1a1a1a', color: '#555' }}
-            >
-              {product.images.length} photos
-            </span>
-          )}
-        </div>
+        <span
+          style={{
+            fontFamily: "'EB Garamond', serif",
+            fontStyle: 'italic',
+            fontSize: '16px',
+            color: T.caramel,
+            lineHeight: 1,
+          }}
+        >
+          ₹{Number(product.price?.amount).toLocaleString('en-IN')}
+        </span>
       </div>
     </article>
   )
 }
 
-/* ── Skeleton ────────────────────────────────────────────────────── */
+/* ── Skeleton card ───────────────────────────────────────────────── */
 const Skeleton = () => (
-  <div className="animate-pulse overflow-hidden rounded-sm" style={{ backgroundColor: '#0f0f0f', border: '1px solid #1c1c1c' }}>
-    <div style={{ aspectRatio: '3/4', backgroundColor: '#161616' }} />
-    <div className="px-3 py-3 flex flex-col gap-2">
-      <div className="h-3 rounded-sm bg-[#1c1c1c] w-3/4" />
-      <div className="h-4 rounded-sm bg-[#1c1c1c] w-1/3" />
+  <div
+    className="snitch-skeleton"
+    style={{
+      backgroundColor: T.sand,
+      border: `1px solid ${T.outline}`,
+      borderRadius: 0,
+      overflow: 'hidden',
+    }}
+  >
+    <div style={{ aspectRatio: '3/4', backgroundColor: T.outline }} />
+    <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ height: '11px', backgroundColor: T.outline, width: '70%', borderRadius: '2px' }} />
+      <div style={{ height: '14px', backgroundColor: T.outline, width: '40%', borderRadius: '2px' }} />
     </div>
   </div>
 )
 
 /* ── Empty state ─────────────────────────────────────────────────── */
 const Empty = ({ onAdd }) => (
-  <div className="col-span-full flex flex-col items-center justify-center py-20 gap-5">
+  <div
+    style={{
+      gridColumn: '1 / -1',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '80px 0', gap: '20px',
+    }}
+  >
     <div
-      className="w-16 h-16 rounded-full flex items-center justify-center"
-      style={{ backgroundColor: '#111', border: '1px solid #222' }}
+      style={{
+        width: '64px', height: '64px', borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: T.sand, border: `1px solid ${T.outline}`,
+      }}
     >
-      <Icon d={PATHS.box} size={28} className="opacity-25" />
+      <Icon d={PATHS.box} size={28} color={T.walnut} style={{ opacity: 0.45 }} />
     </div>
-    <div className="text-center">
-      <p className="text-base font-semibold mb-1" style={{ fontFamily: "'Playfair Display', serif", color: '#f0f0f0' }}>
+
+    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+      <p
+        style={{
+          fontFamily: "'EB Garamond', serif",
+          fontSize: '20px', fontWeight: 400,
+          color: T.espresso, lineHeight: 1.2,
+        }}
+      >
         No products listed yet
       </p>
-      <p className="text-xs mb-4" style={{ color: '#555' }}>Add your first product to get started</p>
-      <button
-        onClick={onAdd}
-        className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase px-5 py-2.5 rounded-sm text-black transition-opacity hover:opacity-85"
-        style={{ backgroundColor: '#F5C518' }}
+      <p
+        style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: '13px', color: T.walnut,
+        }}
       >
-        <Icon d={PATHS.plus} size={13} /> Create Product
+        Add your first product to get started
+      </p>
+      <button
+        className="snitch-empty-btn"
+        onClick={onAdd}
+        style={{
+          marginTop: '10px',
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          padding: '10px 22px',
+          borderRadius: 0, border: 'none',
+          backgroundColor: T.espresso,
+          color: T.bg, cursor: 'pointer',
+        }}
+      >
+        <Icon d={PATHS.plus} size={13} color={T.bg} />
+        Create Product
       </button>
     </div>
   </div>
@@ -198,116 +372,233 @@ const SellerDashbord = () => {
   const goCreate = () => navigate('/seller/create-product')
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: '#060606', fontFamily: "'Inter', sans-serif", color: '#f0f0f0' }}
-    >
+    <div style={{ backgroundColor: T.bg, minHeight: '100vh', fontFamily: "'DM Sans', sans-serif", color: T.espresso }}>
+      <FontStyle />
 
       {/* ══ HEADER ══════════════════════════════════════════════════ */}
       <header
-        className="sticky top-0 z-30"
-        style={{ backgroundColor: 'rgba(6,6,6,0.9)', backdropFilter: 'blur(24px)', borderBottom: '1px solid #181818' }}
+        style={{
+          position: 'sticky', top: 0, zIndex: 30,
+          backgroundColor: T.bg,
+          borderBottom: `1px solid ${T.outline}`,
+        }}
       >
-        <div className="max-w-screen-xl mx-auto px-6 md:px-10 h-14 flex items-center justify-between gap-6">
-
-          {/* Brand + title */}
-          <div className="flex items-center gap-4 shrink-0">
+        <div
+          style={{
+            maxWidth: '1440px', margin: '0 auto',
+            padding: '0 64px', height: '64px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px',
+          }}
+        >
+          {/* Left: Brand + title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
             <span
-              className="text-[10px] font-black tracking-[0.25em] uppercase px-2 py-0.5"
-              style={{ color: '#F5C518', border: '1px solid rgba(245,197,24,0.3)', borderRadius: '2px' }}
+              style={{
+                fontFamily: "'EB Garamond', serif",
+                fontSize: '22px', fontWeight: 400,
+                letterSpacing: '0.18em',
+                color: T.espresso,
+                lineHeight: 1,
+              }}
             >
               Snitch
             </span>
-            <h1
-              className="text-lg font-semibold leading-none hidden sm:block"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+            <div style={{ width: '1px', height: '20px', backgroundColor: T.sand }} />
+            <span
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '14px', fontWeight: 500,
+                color: T.espresso,
+              }}
             >
               Seller Dashboard
-            </h1>
+            </span>
           </div>
 
-          {/* Search */}
-          <div className="relative flex-1 max-w-xs hidden md:block">
-            <Icon d={PATHS.search} size={14} className="absolute left-0 top-1/2 -translate-y-1/2 opacity-30" />
+          {/* Center: Search */}
+          <div style={{ position: 'relative', flex: 1, maxWidth: '280px' }}>
+            <span
+              style={{
+                position: 'absolute', left: 0, top: '50%',
+                transform: 'translateY(-50%)',
+                display: 'flex', alignItems: 'center',
+                pointerEvents: 'none',
+              }}
+            >
+              <Icon d={PATHS.search} size={14} color={T.faint} style={{ opacity: 0.7 }} />
+            </span>
             <input
+              className="snitch-search-input"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search products…"
-              className="w-full bg-transparent pl-5 pb-1 text-sm outline-none placeholder-[#383838]"
               style={{
-                color: '#f0f0f0',
-                borderBottom: `1px solid ${search ? '#F5C518' : '#252525'}`,
+                width: '100%',
+                background: 'transparent',
+                paddingLeft: '22px',
+                paddingBottom: '4px',
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '13px',
+                color: T.espresso,
+                border: 'none',
+                borderBottom: `1px solid ${search ? T.caramel : T.outline}`,
                 transition: 'border-color 0.2s',
               }}
             />
           </div>
 
-          {/* ★ Create Product button ★ */}
+          {/* Right: Create Product */}
           <button
+            className="snitch-create-btn"
             onClick={goCreate}
-            className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-sm text-black shrink-0 transition-opacity hover:opacity-85 active:scale-95"
-            style={{ backgroundColor: '#F5C518' }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              padding: '10px 20px',
+              borderRadius: 0, border: 'none',
+              backgroundColor: T.espresso,
+              color: T.bg,
+              flexShrink: 0,
+            }}
           >
-            <Icon d={PATHS.plus} size={13} />
-            <span>Create Product</span>
+            <Icon d={PATHS.plus} size={13} color={T.bg} />
+            Create Product
           </button>
-
         </div>
       </header>
 
       {/* ══ MAIN ════════════════════════════════════════════════════ */}
-      <main className="max-w-screen-xl mx-auto px-6 md:px-10 pt-7 pb-20">
+      <main
+        style={{
+          maxWidth: '1440px', margin: '0 auto',
+          padding: '32px 64px 24px',
+        }}
+      >
 
         {/* ── Stats row ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-3 mb-7">
-          {[
-            { label: 'Total Products', value: products.length, gold: true },
-            { label: 'Out of Stock',   value: products.filter(p => p.stock === 0).length, gold: false },
-          ].map(s => (
-            <div
-              key={s.label}
-              className="flex items-center gap-4 px-5 py-3.5 rounded-sm"
-              style={{
-                backgroundColor: '#0f0f0f',
-                border: '1px solid #1c1c1c',
-                borderTop: `2px solid ${s.gold ? '#F5C518' : '#1c1c1c'}`,
-              }}
-            >
-              <Icon d={PATHS.layers} size={18} className="opacity-20 shrink-0" />
-              <div>
-                <p className="text-[9px] font-bold tracking-[0.18em] uppercase mb-0.5" style={{ color: '#555' }}>
-                  {s.label}
-                </p>
-                <p
-                  className="text-2xl font-bold leading-none"
-                  style={{ color: s.gold ? '#F5C518' : '#f0f0f0', fontFamily: "'Playfair Display', serif" }}
-                >
-                  {loading ? '–' : s.value}
-                </p>
-              </div>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+          {/* Card 1 — Total Products */}
+          <div
+            style={{
+              backgroundColor: T.sand,
+              padding: '16px 24px',
+              borderTop: `2px solid ${T.caramel}`,
+              display: 'flex', alignItems: 'center', gap: '16px',
+              flex: 1,
+            }}
+          >
+            <Icon d={PATHS.layers} size={18} color={T.walnut} style={{ opacity: 0.5, flexShrink: 0 }} />
+            <div>
+              <p
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '9px', fontWeight: 500,
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  color: T.faint, marginBottom: '4px',
+                }}
+              >
+                Total Products
+              </p>
+              <p
+                style={{
+                  fontFamily: "'EB Garamond', serif",
+                  fontSize: '32px', fontWeight: 400,
+                  color: T.espresso, lineHeight: 1,
+                }}
+              >
+                {loading ? '–' : products.length}
+              </p>
             </div>
-          ))}
+          </div>
+
+          {/* Card 2 — Out of Stock */}
+          <div
+            style={{
+              backgroundColor: T.sand,
+              padding: '16px 24px',
+              borderTop: `2px solid ${T.outline}`,
+              display: 'flex', alignItems: 'center', gap: '16px',
+              flex: 1,
+            }}
+          >
+            <Icon d={PATHS.layers} size={18} color={T.walnut} style={{ opacity: 0.5, flexShrink: 0 }} />
+            <div>
+              <p
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '9px', fontWeight: 500,
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  color: T.faint, marginBottom: '4px',
+                }}
+              >
+                Out of Stock
+              </p>
+              <p
+                style={{
+                  fontFamily: "'EB Garamond', serif",
+                  fontSize: '32px', fontWeight: 400,
+                  color: T.walnut, lineHeight: 1,
+                }}
+              >
+                {loading ? '–' : products.filter(p => p.stock === 0).length}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* ── Toolbar: label + filters ─────────────────────────── */}
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: '#444' }}>
-            My Products
-            {!loading && (
-              <span className="ml-2 font-normal" style={{ color: '#333' }}>({filtered.length})</span>
-            )}
-          </p>
+        {/* ── Section header ────────────────────────────────────── */}
+        <div
+          style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            marginBottom: '16px',
+          }}
+        >
+          {/* Left: eyebrow + title */}
+          <div>
+            <p
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '10px', fontWeight: 500,
+                letterSpacing: '0.18em', textTransform: 'uppercase',
+                color: T.caramel, marginBottom: '4px',
+              }}
+            >
+              My Products
+              {!loading && (
+                <span style={{ marginLeft: '8px', fontWeight: 400, color: T.faint }}>
+                  ({filtered.length})
+                </span>
+              )}
+            </p>
+            <h2
+              style={{
+                fontFamily: "'EB Garamond', serif",
+                fontSize: '22px', fontWeight: 400,
+                color: T.espresso, lineHeight: 1,
+              }}
+            >
+              Product Catalogue
+            </h2>
+          </div>
 
-          <div className="flex items-center gap-1">
+          {/* Right: filter chips */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {tabs.map(t => (
               <button
                 key={t}
+                className="snitch-chip-btn"
                 onClick={() => setFilter(t)}
-                className="text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-sm transition-all duration-150"
                 style={{
-                  backgroundColor: filter === t ? '#F5C518' : 'transparent',
-                  color:           filter === t ? '#000'    : '#444',
-                  border:          filter === t ? '1px solid #F5C518' : '1px solid #1e1e1e',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '9px', fontWeight: 500,
+                  letterSpacing: '0.14em', textTransform: 'uppercase',
+                  padding: '6px 12px',
+                  borderRadius: 0,
+                  backgroundColor: filter === t ? T.espresso : 'transparent',
+                  color:           filter === t ? T.bg       : T.faint,
+                  border:          filter === t ? `1px solid ${T.espresso}` : `1px solid ${T.outline}`,
                 }}
               >
                 {t}
@@ -316,36 +607,73 @@ const SellerDashbord = () => {
           </div>
         </div>
 
-        {/* mobile search */}
-        <div className="relative mb-4 md:hidden">
-          <Icon d={PATHS.search} size={14} className="absolute left-0 top-1/2 -translate-y-1/2 opacity-25" />
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search products…"
-            className="w-full bg-transparent pl-5 pb-1 text-sm outline-none placeholder-[#383838]"
-            style={{ color: '#f0f0f0', borderBottom: `1px solid ${search ? '#F5C518' : '#252525'}` }}
-          />
-        </div>
-
-        {/* thin divider */}
-        <div className="mb-5" style={{ height: '1px', backgroundColor: '#141414' }} />
+        {/* Thin divider */}
+        <div style={{ height: '1px', backgroundColor: T.sand, marginBottom: '20px' }} />
 
         {/* ── Product grid ──────────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '16px',
+          }}
+        >
           {loading
             ? Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} />)
             : filtered.length === 0
               ? <Empty onAdd={goCreate} />
-              : filtered.map(p => <ProductCard key={p._id} product={p}  onClick={() => navigate(`/seller/product/${p._id}`)} />)
+              : filtered.map(p => (
+                  <ProductCard
+                    key={p._id}
+                    product={p}
+                    onClick={() => navigate(`/seller/product/${p._id}`)}
+                  />
+                ))
           }
         </div>
 
         {/* result count */}
         {!loading && filtered.length > 0 && (
-          <p className="mt-10 text-center text-[10px] tracking-widest uppercase" style={{ color: '#282828' }}>
-            {filtered.length} / {products.length} products
+          <p
+            style={{
+              marginTop: '40px', textAlign: 'center',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '10px', letterSpacing: '0.16em', textTransform: 'uppercase',
+              color: T.outline,
+            }}
+          >
+            Showing {filtered.length} of {products.length} products
           </p>
         )}
+
+        {/* ── Footer strip ──────────────────────────────────────── */}
+        <div
+          style={{
+            borderTop: `1px solid ${T.outline}`,
+            marginTop: '48px', paddingTop: '16px',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'EB Garamond', serif",
+              fontSize: '16px', fontWeight: 400,
+              letterSpacing: '0.12em',
+              color: T.espresso,
+            }}
+          >
+            Snitch
+          </span>
+          <span
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '11px',
+              color: T.faint,
+            }}
+          >
+            © {new Date().getFullYear()} Snitch Menswear. All rights reserved.
+          </span>
+        </div>
 
       </main>
     </div>

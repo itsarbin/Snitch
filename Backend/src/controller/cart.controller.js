@@ -1,9 +1,8 @@
 import cartModel from '../model/cart.model.js'
 import productModel from '../model/product.model.js'
-import { variantStock } from '../dao/product.dao.js';
 
 export const addToCart = async (req, res) => {
-    const { productId, variantId } = req.body;
+    const { productId, variantId } = req.params;
 
     const product = await productModel.findById(productId);
     if (!product) {
@@ -17,7 +16,7 @@ export const addToCart = async (req, res) => {
 
     let cart = await cartModel.findOne({ user: req.user._id }) || await cartModel.create({ user: req.user._id });
 
-    const existingItem = cart.items.find(item => item.product.toString() === productId && item.variant.toString() === variantId);
+    const existingItem = cart.items.find(item => item.productId.toString() === productId && item.variantId.toString() === variantId);
 
    
 
@@ -42,7 +41,7 @@ export const addToCart = async (req, res) => {
         }
 
 
-        cart.items.push({ product: productId, variant: variantId, quantity: 1, price: variant.price },);
+        cart.items.push({ productId, variantId, quantity: 1, price: variant.price },);
         await cart.save();
         return res.status(200).json({ message: 'Item added to cart successfully', success: true,  });
     }
@@ -51,7 +50,7 @@ export const addToCart = async (req, res) => {
 
 export const getCart = async (req, res) => {
     const user = req.user._id;
-    const cart = await cartModel.findOne({user}).populate('items.product')
+    const cart = await cartModel.findOne({user}).populate('items.productId')
     if(!cart){
         return res.status(404).json({message: 'Cart not found'})
     }

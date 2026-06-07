@@ -4,11 +4,11 @@ import {useDispatch} from 'react-redux'
 
 export const useCart = () => {
     const dispatch = useDispatch()
- q
     const handleAddToCart = async (productId, variantId) => {
         try{
             const data = await addToCart(productId, variantId)
             return data
+            console.log('Add to cart response:', data);
         }catch(error){
             console.error('Error adding to cart:', error);
             throw error;        
@@ -19,7 +19,7 @@ export const useCart = () => {
         try{
             const data = await getCart()
             dispatch(setItems(data.cart.items))
-            console.log('Cart items:', data.cart.items);
+            
         }catch(error){
             console.error('Error fetching cart:', error);
             throw error;

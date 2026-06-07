@@ -4,7 +4,7 @@ import { addToCart, getCart } from '../controller/cart.controller.js'
 
 const  router = Router()
 
-router.post('/add',authenticateUser, addToCart)
+router.post('/add/:productId/:variantId',authenticateUser, addToCart)
 router.get('/', authenticateUser, getCart)
 
 

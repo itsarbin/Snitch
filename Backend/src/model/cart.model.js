@@ -9,7 +9,7 @@ const cartSchema = new mongoose.Schema({
     items:[
         {
             productId:{
-                type: mongoose.Schema.Types.OjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 ref: 'product',
                 required: true
             },

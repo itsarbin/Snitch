@@ -13,7 +13,7 @@ const Protected = ({role, children}) => {
         return <div>You need to login to access this page</div>
     }
 
-    if(user.role !== role){
+    if(role && user.role !== role){
         console.log('User role:', user.role, ', Required role:', role);
         return <Navigate to='/' replace />
     }

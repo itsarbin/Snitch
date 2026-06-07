@@ -1,130 +1,296 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useAuth } from '../hook/useAuth';
-import ContinueWithGoogle from '../components/ContinueWithGoogle';
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import { useAuth } from '../hook/useAuth'
+import ContinueWithGoogle from '../components/ContinueWithGoogle'
 
+/* ─── shared tokens (same as Home) ─────────────────────────────── */
+const C = {
+  bg:       '#fdf9f3',
+  surface:  '#f1ede7',
+  sand:     '#e8d5b7',
+  outline:  '#d4c3ba',
+  espresso: '#3b1f0c',
+  walnut:   '#7b4a2d',
+  caramel:  '#c17a3f',
+  muted:    '#50443e',
+  faint:    '#82746d',
+  serif:    "'EB Garamond', Georgia, serif",
+  sans:     "'DM Sans', system-ui, sans-serif",
+}
+
+/* ─── reusable form field ────────────────────────────────────────── */
+const Field = ({ label, type = 'text', name, value, onChange, placeholder, right }) => {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <label style={{
+          fontFamily: C.sans, fontSize: '10px', fontWeight: 600,
+          letterSpacing: '0.22em', textTransform: 'uppercase',
+          color: focused ? C.caramel : C.faint,
+          transition: 'color 0.2s',
+        }}>
+          {label}
+        </label>
+        {right}
+      </div>
+      <input
+        type={type} name={name} value={value}
+        onChange={onChange} placeholder={placeholder}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          fontFamily: C.sans, fontSize: '14px', fontWeight: 300,
+          letterSpacing: '0.03em', color: C.espresso,
+          background: 'transparent', border: 'none', outline: 'none',
+          borderBottom: `1px solid ${focused ? C.caramel : C.outline}`,
+          padding: '8px 0 10px',
+          transition: 'border-color 0.25s',
+          width: '100%',
+        }}
+      />
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOGIN PAGE
+═══════════════════════════════════════════════════════════════════ */
 const Login = () => {
   const navigate = useNavigate()
-  const {handleLogin} = useAuth()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const { handleLogin } = useAuth()
+  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [loading, setLoading] = useState(false)
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e)=>{
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
     try {
-      const {email,password} = formData
-      const user = await handleLogin({email,password})
-      
-      if(user.role === 'seller'){
-        navigate('/seller/dashboard')
-      } else if(user.role === 'buyer'){
-        navigate('/')
-      }
+      const { email, password } = formData
+      const user = await handleLogin({ email, password })
+      if (user.role === 'seller') navigate('/seller/dashboard')
+      else if (user.role === 'buyer') navigate('/')
     } catch (error) {
       console.error('Login error:', error.message)
+    } finally {
+      setLoading(false)
     }
   }
 
-    
   return (
-    <>
-      {/* TopNavBar */}
-      <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-md max-w-container-max mx-auto bg-surface-dim/90 backdrop-blur-md">
-        <div className="font-display-lg text-display-lg-mobile md:text-headline-md tracking-tighter text-primary-container">SNITCH</div>
-        <div className="hidden md:flex items-center gap-xl">
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">Collections</a>
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">New Arrivals</a>
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">Archive</a>
-          <a className="font-label-caps text-label-caps text-on-surface hover:text-primary-container transition-colors duration-300" href="#">Journal</a>
+    <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden', fontFamily: C.sans }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        input::placeholder { color: ${C.outline}; }
+        .auth-submit:hover { background: ${C.walnut} !important; transform: translateY(-1px); }
+        .auth-submit:active { transform: translateY(0); }
+        .auth-ghost:hover { background: ${C.espresso} !important; color: ${C.bg} !important; }
+        .auth-link:hover { color: ${C.espresso} !important; }
+      `}</style>
+
+      {/* ── LEFT: Visual column ───────────────────────────────────── */}
+      <div style={{
+        width: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden',
+      }}>
+        <img
+          src="/auth_login.png"
+          alt="Snitch SS 2026 Collection"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+        />
+        {/* Dark gradient overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(20,8,2,0.82) 0%, rgba(20,8,2,0.2) 45%, transparent 70%)',
+        }} />
+
+        {/* Bottom brand copy */}
+        <div style={{ position: 'absolute', bottom: '52px', left: '52px', right: '52px' }}>
+          <p style={{
+            fontFamily: C.serif, fontStyle: 'italic',
+            fontSize: '32px', fontWeight: 300,
+            color: C.bg, lineHeight: 1.2,
+            marginBottom: '18px',
+          }}>
+            The Art of Dressing Well.
+          </p>
+          <div style={{ width: '48px', height: '1px', backgroundColor: C.caramel, marginBottom: '14px' }} />
+          <p style={{
+            fontFamily: C.sans, fontSize: '10px', fontWeight: 500,
+            letterSpacing: '0.28em', textTransform: 'uppercase',
+            color: C.sand,
+          }}>
+            SS 2026 Collection
+          </p>
         </div>
-        <div className="flex items-center gap-lg">
-          <button className="active:scale-95 transition-transform duration-200">
-            <span className="material-symbols-outlined text-on-surface hover:text-primary-container transition-all duration-300">search</span>
-          </button>
-          <button className="active:scale-95 transition-transform duration-200">
-            <span className="material-symbols-outlined text-on-surface hover:text-primary-container transition-all duration-300">shopping_bag</span>
-          </button>
-        </div>
-      </nav>
+      </div>
 
-      {/* Main Content: Registration Split Screen */}
-      <main className="flex h-screen w-full pt-[72px]">
-        {/* Left Photography Column */}
-        <div className="hidden lg:block w-1/2 h-full relative overflow-hidden">
-          <img alt="High-fashion urban editorial" className="w-full h-full object-cover grayscale brightness-75 contrast-125" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
-          <div className="absolute bottom-xl left-margin-desktop">
-            <p className="font-headline-sm text-headline-sm text-primary-container mb-xs">THE ARCHIVE</p>
-            <p className="font-label-caps text-label-caps text-on-surface tracking-[0.3em]">FW24 LOGIN</p>
-          </div>
-        </div>
+      {/* ── RIGHT: Form column ────────────────────────────────────── */}
+      <div style={{
+        flex: 1, background: C.bg,
+        display: 'flex', flexDirection: 'column',
+        overflowY: 'auto',
+      }}>
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '64px 72px',
+          maxWidth: '560px', margin: '0 auto', width: '100%',
+        }}>
 
-        {/* Right Form Column */}
-        <div className="w-full lg:w-1/2 h-full flex flex-col bg-surface overflow-y-auto scrollbar-hide px-margin-mobile md:px-margin-desktop">
-          <div className="flex-grow flex flex-col justify-center max-w-[480px] mx-auto w-full py-md">
-            <header className="mb-md">
-              <h1 className="font-display-lg text-display-lg-mobile md:text-headline-md mb-xs text-on-surface">Welcome Back.</h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant">Sign in to access your exclusive drops.</p>
-            </header>
+          {/* Logo */}
+          <p style={{
+            fontFamily: C.serif,
+            fontSize: '24px', fontWeight: 400,
+            letterSpacing: '0.22em', textTransform: 'uppercase',
+            color: C.espresso, marginBottom: '48px',
+          }}>
+            Snitch
+          </p>
 
-            <form className="space-y-md" onSubmit={handleSubmit}>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Email Address</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="email" placeholder="AVANCE@STUDIO.COM" type="email" value={formData.email} onChange={handleChange} />
-              </div>
-              <div className="group relative">
-                <label className="font-label-caps text-label-caps text-on-surface-variant mb-xs block transition-colors group-focus-within:text-primary-container">Password</label>
-                <input className="w-full bg-transparent border-0 border-b border-outline py-sm px-0 focus:ring-0 focus:border-primary-container text-on-surface placeholder:text-outline transition-all duration-300" name="password" placeholder="••••••••••••" type="password" value={formData.password} onChange={handleChange} />
-              </div>
+          {/* Eyebrow */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '10px', fontWeight: 600,
+            letterSpacing: '0.28em', textTransform: 'uppercase',
+            color: C.caramel, marginBottom: '12px',
+          }}>
+            Welcome Back
+          </p>
 
-              <div className="pt-sm pb-md"></div>
+          {/* Headline */}
+          <h1 style={{
+            fontFamily: C.serif, fontStyle: 'italic',
+            fontSize: '44px', fontWeight: 300, lineHeight: 1.15,
+            color: C.espresso, marginBottom: '12px',
+          }}>
+            Sign in to your account
+          </h1>
 
-              <button className="w-full bg-primary-container text-on-primary-container py-md font-label-caps text-label-caps hover:bg-primary-fixed transition-colors active:scale-[0.98] duration-200" type="submit">
-                SIGN IN
-              </button>
+          {/* Subtext */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '13px', fontWeight: 300,
+            lineHeight: 1.75, color: C.walnut,
+            marginBottom: '44px',
+          }}>
+            Access your orders, wishlist, and exclusive member drops.
+          </p>
 
-              <div className="flex items-center gap-sm my-md">
-                <div className="flex-1 h-px bg-outline-variant"></div>
-                <span className="font-label-caps text-label-caps text-on-surface-variant">OR</span>
-                <div className="flex-1 h-px bg-outline-variant"></div>
-              </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <Field
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+            />
 
+            <Field
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••••••"
+              right={
+                <a href="#" style={{
+                  fontFamily: C.sans, fontSize: '11px', fontWeight: 400,
+                  color: C.caramel, textDecoration: 'none',
+                  letterSpacing: '0.03em',
+                  transition: 'opacity 0.2s',
+                }}>
+                  Forgot password?
+                </a>
+              }
+            />
+
+            {/* CTA */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="auth-submit"
+              style={{
+                marginTop: '8px',
+                fontFamily: C.sans, fontSize: '11px', fontWeight: 600,
+                letterSpacing: '0.22em', textTransform: 'uppercase',
+                background: C.espresso, color: C.bg,
+                border: 'none', padding: '16px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1,
+                transition: 'background 0.25s, transform 0.2s',
+                width: '100%',
+              }}
+            >
+              {loading ? 'Signing in…' : 'Sign In'}
+            </button>
+
+            {/* OR divider */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ flex: 1, height: '1px', background: C.sand }} />
+              <span style={{
+                fontFamily: C.sans, fontSize: '10px', fontWeight: 500,
+                letterSpacing: '0.2em', color: C.faint,
+              }}>
+                OR
+              </span>
+              <div style={{ flex: 1, height: '1px', background: C.sand }} />
+            </div>
+
+            {/* Google */}
             <ContinueWithGoogle />
-            </form>
+          </form>
 
-            <div className="mt-lg text-center">
-              <p className="font-label-md text-label-md text-on-surface-variant">
-                DON'T HAVE AN ACCOUNT? <a className="text-primary-container hover:underline underline-offset-4 ml-xs" href="/register">REGISTER</a>
-              </p>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <footer className="w-full py-md flex flex-col md:flex-row justify-between items-center gap-gutter border-t border-outline-variant mt-auto">
-            <div className="font-headline-sm text-headline-sm text-on-surface">SNITCH</div>
-            <div className="flex gap-lg flex-wrap justify-center">
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Privacy Policy</a>
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Terms of Service</a>
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Shipping &amp; returns</a>
-              <a className="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#">Contact</a>
-            </div>
-            <div className="font-label-md text-label-md text-on-surface-variant">© 2024 SNITCH CLOTHING. ALL RIGHTS RESERVED.</div>
-          </footer>
+          {/* Register link */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '13px', fontWeight: 300,
+            color: C.walnut, marginTop: '36px', textAlign: 'center',
+          }}>
+            Don't have an account?{' '}
+            <a
+              href="/register"
+              className="auth-link"
+              style={{
+                color: C.caramel, textDecoration: 'underline',
+                textUnderlineOffset: '3px', fontWeight: 400,
+                transition: 'color 0.2s',
+              }}
+            >
+              Create one
+            </a>
+          </p>
         </div>
-      </main>
-    </>
-  );
-};
 
-export default Login;
+        {/* Footer strip */}
+        <div style={{
+          borderTop: `1px solid ${C.outline}`,
+          padding: '16px 72px',
+          display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px',
+        }}>
+          {['Privacy Policy', 'Terms of Service', 'Contact'].map((l) => (
+            <a key={l} href="#" style={{
+              fontFamily: C.sans, fontSize: '11px', color: C.faint,
+              textDecoration: 'none', letterSpacing: '0.04em',
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={e => e.target.style.color = C.walnut}
+            onMouseLeave={e => e.target.style.color = C.faint}
+            >
+              {l}
+            </a>
+          ))}
+          <span style={{ fontFamily: C.sans, fontSize: '11px', color: C.faint, letterSpacing: '0.04em' }}>
+            © 2026 Snitch
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Login

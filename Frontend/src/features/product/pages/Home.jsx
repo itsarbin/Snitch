@@ -3,275 +3,578 @@ import { useSelector } from 'react-redux'
 import { useProduct } from '../hook/useProduct'
 import { useNavigate } from 'react-router'
 
+/* ─── Google Fonts ──────────────────────────────────────────────── */
+const FontInjector = () => {
+  useEffect(() => {
+    if (document.getElementById('snitch-fonts')) return
+    const link = document.createElement('link')
+    link.id = 'snitch-fonts'
+    link.rel = 'stylesheet'
+    link.href =
+      'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap'
+    document.head.appendChild(link)
+  }, [])
+  return null
+}
 
-/* ── icon helper ─────────────────────────────────────────────────── */
-const Icon = ({ d, size = 18, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"
-    className={className}>
+/* ─── Design tokens ─────────────────────────────────────────────── */
+const C = {
+  bg:          '#fdf9f3',   // warm cream canvas
+  bgAlt:       '#f7f3ed',   // slightly deeper cream
+  surface:     '#f1ede7',   // card/section surfaces
+  surfaceHigh: '#ebe8e2',   // elevated surface
+  sand:        '#e8d5b7',   // sand — footer bg, chips
+  outline:     '#d4c3ba',   // subtle borders
+  outlineDark: 'rgba(59,31,12,0.12)', // espresso at low opacity
+
+  espresso:    '#3b1f0c',   // primary text + CTAs
+  walnut:      '#7b4a2d',   // secondary text
+  caramel:     '#c17a3f',   // accent / interactive
+  caramelLight:'#e09f65',   // hover state
+
+  onSurface:   '#1c1c18',
+  muted:       '#50443e',
+  faint:       '#82746d',
+
+  serif:   "'EB Garamond', Georgia, serif",
+  sans:    "'DM Sans', system-ui, sans-serif",
+}
+
+/* ─── SVG Icon helper ───────────────────────────────────────────── */
+const Icon = ({ d, size = 20, style = {} }) => (
+  <svg
+    width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke="currentColor"
+    strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
+    style={style}
+  >
     <path d={d} />
   </svg>
 )
-const PATHS = {
+const IC = {
   search: 'M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z',
-  cart: 'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0',
-  img: 'M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z',
-  arrow: 'M5 12h14M12 5l7 7-7 7',
-  bag: 'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z M3 6h18 M16 10a4 4 0 0 1-8 0',
+  bag:    'M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z',
+  arrow:  'M5 12h14M12 5l7 7-7 7',
+  img:    'M21 15.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 15.5v-11A2.5 2.5 0 0 1 5.5 2h13A2.5 2.5 0 0 1 21 4.5zM8.5 10l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z',
 }
 
-/* ── Skeleton ────────────────────────────────────────────────────── */
+/* ─── Skeleton ──────────────────────────────────────────────────── */
 const CardSkeleton = () => (
-  <div className="animate-pulse rounded-sm overflow-hidden"
-    style={{ backgroundColor: '#0f0f0f', border: '1px solid #1a1a1a' }}>
-    <div style={{ aspectRatio: '3/4', backgroundColor: '#161616' }} />
-    <div className="px-3 py-3 flex flex-col gap-2">
-      <div className="h-3 rounded bg-[#1c1c1c] w-3/4" />
-      <div className="h-2.5 rounded bg-[#1c1c1c] w-full" />
-      <div className="h-4 rounded bg-[#1c1c1c] w-1/3 mt-1" />
+  <div style={{ background: C.surface, overflow: 'hidden' }}>
+    <style>{`@keyframes skel{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+    <div style={{ aspectRatio: '2/3', background: C.surfaceHigh, animation: 'skel 1.6s ease-in-out infinite' }} />
+    <div style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '8px', animation: 'skel 1.6s ease-in-out infinite' }}>
+      <div style={{ height: '10px', width: '45%', background: C.outline }} />
+      <div style={{ height: '14px', width: '75%', background: C.outline }} />
+      <div style={{ height: '12px', width: '30%', background: C.sand, marginTop: '4px' }} />
     </div>
   </div>
 )
 
-/* ── Product Card ────────────────────────────────────────────────── */
+/* ─── Product Card ──────────────────────────────────────────────── */
 const ProductCard = ({ product, onClick }) => {
-  const [imgErr, setImgErr] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [imgErr, setImgErr]   = useState(false)
   const img = product.images?.[0]?.url
-
-  const desc = product.description && product.description.length > 50
-    ? product.description.slice(0, 50) + '…'
-    : product.description
 
   return (
     <article
       onClick={onClick}
-      className="group flex flex-col overflow-hidden cursor-pointer"
-      style={{ backgroundColor: '#0f0f0f', border: '1px solid #1a1a1a', borderRadius: '2px' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
     >
       {/* Image */}
-      <div className="relative overflow-hidden flex-shrink-0"
-        style={{ aspectRatio: '3/4', backgroundColor: '#080808' }}>
+      <div style={{
+        position: 'relative', overflow: 'hidden',
+        aspectRatio: '2/3', flexShrink: 0,
+        background: C.surface,
+      }}>
         {img && !imgErr ? (
           <img
             src={img} alt={product.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             onError={() => setImgErr(true)}
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)',
+              transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Icon d={PATHS.img} size={36} className="opacity-10" />
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.surface }}>
+            <Icon d={IC.img} size={40} style={{ color: C.outline, opacity: 0.6 }} />
           </div>
         )}
 
-        {/* hover CTA */}
-        <div
-          className="absolute inset-x-0 bottom-0 flex justify-center pb-3 transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}
-        >
-          <button
-            className="text-[10px] font-bold tracking-widest uppercase px-5 py-2 rounded-sm text-black"
-            style={{ backgroundColor: '#F5C518' }}
-          >
-            Add to Cart
+        {/* bottom gradient */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(59,31,12,0.55) 0%, transparent 50%)',
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 0.35s ease',
+          pointerEvents: 'none',
+        }} />
+
+        {/* Caramel top line */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+          background: C.caramel,
+          transform: hovered ? 'scaleX(1)' : 'scaleX(0)',
+          transformOrigin: 'left',
+          transition: 'transform 0.4s ease',
+        }} />
+
+        {/* Add to Bag CTA */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          padding: '16px',
+          opacity: hovered ? 1 : 0,
+          transform: hovered ? 'translateY(0)' : 'translateY(10px)',
+          transition: 'opacity 0.3s ease, transform 0.3s ease',
+        }}>
+          <button style={{
+            width: '100%',
+            fontFamily: C.sans, fontSize: '10px', fontWeight: 600,
+            letterSpacing: '0.2em', textTransform: 'uppercase',
+            background: C.espresso, color: C.bg,
+            border: 'none', padding: '11px 0',
+            cursor: 'pointer',
+          }}>
+            Add to Bag
           </button>
         </div>
-
-        {/* gold line on hover */}
-        <div
-          className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
-          style={{ backgroundColor: '#F5C518' }}
-        />
       </div>
 
       {/* Info */}
-      <div className="px-3 py-3">
-        <h3
-          className="text-sm font-semibold leading-snug truncate mb-1"
-          style={{ fontFamily: "'Playfair Display', serif", color: '#f0f0f0' }}
-        >
+      <div style={{ paddingTop: '14px', paddingBottom: '4px' }}>
+        <p style={{
+          fontFamily: C.sans, fontSize: '9px', fontWeight: 500,
+          letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: C.faint, marginBottom: '5px',
+        }}>
+          {product.category || 'Snitch'}
+        </p>
+        <h3 style={{
+          fontFamily: C.serif,
+          fontSize: '18px', fontWeight: 400, lineHeight: 1.25,
+          color: C.espresso, margin: '0 0 8px',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
           {product.title}
         </h3>
-
-        <p className="text-[11px] leading-relaxed mb-2 line-clamp-1" style={{ color: '#4a4a4a' }}>
-          {desc}
-        </p>
-
-        <p className="text-sm font-bold" style={{ color: '#F5C518' }}>
+        <p style={{
+          fontFamily: C.serif, fontStyle: 'italic',
+          fontSize: '16px', fontWeight: 400,
+          color: C.caramel,
+        }}>
           ₹{Number(product.price?.amount).toLocaleString('en-IN')}
-          <span className="text-[10px] font-normal ml-1" style={{ color: '#333' }}>
-            {product.price?.currency || 'INR'}
-          </span>
         </p>
       </div>
     </article>
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════
    HOME PAGE
-════════════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════════ */
+const FILTERS = ['All', 'New', 'Tops', 'Bottoms', 'Outerwear']
+const MARQUEE_ITEMS = ['Free Shipping on Orders ₹999+', '·', 'New Arrivals Every Friday', '·', 'Premium Fabrics', '·', 'Curated Menswear', '·', 'Exclusive Members Drop', '·']
+
 const Home = () => {
   const navigate = useNavigate()
   const { handleFetchAllProducts } = useProduct()
-  const allProducts = useSelector((state) => state.product.allProducts)
+  const allProducts = useSelector((s) => s.product.allProducts)
 
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [loading, setLoading]           = useState(true)
+  const [search, setSearch]             = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [activeFilter, setActiveFilter] = useState('All')
 
   useEffect(() => {
-    ; (async () => {
+    ;(async () => {
       setLoading(true)
-      await handleFetchAllProducts().catch(() => { })
+      await handleFetchAllProducts().catch(() => {})
       setLoading(false)
     })()
   }, [])
 
   const products = allProducts || []
   const filtered = search.trim()
-    ? products.filter(p =>
-      p.title?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase())
-    )
+    ? products.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(search.toLowerCase()) ||
+          p.description?.toLowerCase().includes(search.toLowerCase())
+      )
     : products
 
   return (
-    <div style={{ backgroundColor: '#060606', fontFamily: "'Inter', sans-serif", color: '#f0f0f0', minHeight: '100vh' }}>
+    <div style={{ background: C.bg, fontFamily: C.sans, color: C.onSurface, minHeight: '100vh' }}>
+      <FontInjector />
 
-      {/* ══ NAVBAR ══════════════════════════════════════════════════ */}
+      <style>{`
+        @keyframes marquee-scroll {
+          from { transform: translateX(0) }
+          to   { transform: translateX(-50%) }
+        }
+        .snitch-nav-link {
+          font-family: ${C.sans};
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: ${C.walnut};
+          text-decoration: none;
+          padding-bottom: 2px;
+          border-bottom: 1px solid transparent;
+          transition: color 0.2s, border-color 0.2s;
+        }
+        .snitch-nav-link:hover {
+          color: ${C.espresso};
+          border-bottom-color: ${C.caramel};
+        }
+        .snitch-cta-primary {
+          font-family: ${C.sans};
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          background: ${C.espresso};
+          color: ${C.bg};
+          border: none;
+          padding: 15px 36px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          transition: background 0.25s, transform 0.2s;
+        }
+        .snitch-cta-primary:hover {
+          background: ${C.walnut};
+          transform: translateY(-1px);
+        }
+        .snitch-cta-ghost {
+          font-family: ${C.sans};
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          background: transparent;
+          color: ${C.espresso};
+          border: 1px solid ${C.espresso};
+          padding: 15px 36px;
+          cursor: pointer;
+          transition: background 0.25s, color 0.25s;
+        }
+        .snitch-cta-ghost:hover {
+          background: ${C.espresso};
+          color: ${C.bg};
+        }
+        .snitch-chip {
+          font-family: ${C.sans};
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          padding: 8px 20px;
+          border: 1px solid ${C.outline};
+          background: transparent;
+          color: ${C.muted};
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .snitch-chip:hover {
+          border-color: ${C.walnut};
+          color: ${C.espresso};
+        }
+        .snitch-chip.active {
+          background: ${C.espresso};
+          color: ${C.bg};
+          border-color: ${C.espresso};
+        }
+        .snitch-footer-link {
+          font-family: ${C.sans};
+          font-size: 13px;
+          font-weight: 400;
+          color: ${C.walnut};
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+        .snitch-footer-link:hover {
+          color: ${C.espresso};
+        }
+      `}</style>
+
+      {/* ══ NAVBAR ════════════════════════════════════════════════════ */}
       <nav style={{
-        position: 'sticky', top: 0, zIndex: 30,
-        backgroundColor: 'rgba(6,6,6,0.93)',
+        position: 'sticky', top: 0, zIndex: 50,
+        background: 'rgba(253,249,243,0.94)',
         backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid #161616',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: `1px solid ${C.sand}`,
       }}>
         <div style={{
-          maxWidth: '1280px', margin: '0 auto',
-          padding: '0 40px', height: '60px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px',
+          maxWidth: '1440px', margin: '0 auto',
+          padding: '0 64px', height: '70px',
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
         }}>
+
           {/* Logo */}
           <span style={{
-            fontSize: '10px', fontWeight: 900, letterSpacing: '0.28em',
-            textTransform: 'uppercase', color: '#F5C518',
-            border: '1px solid rgba(245,197,24,0.35)',
-            padding: '3px 8px', borderRadius: '2px', flexShrink: 0,
+            fontFamily: C.serif,
+            fontSize: '26px', fontWeight: 400,
+            letterSpacing: '0.2em', textTransform: 'uppercase',
+            color: C.espresso,
           }}>
             Snitch
           </span>
 
+          {/* Nav links */}
+          <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+            {['Collections', 'New Arrivals', 'Editorial', 'About'].map((l) => (
+              <a key={l} href="#" className="snitch-nav-link">{l}</a>
+            ))}
+          </div>
 
-
-          {/* Search + Cart */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
-            <div style={{ position: 'relative' }}>
-              <Icon d={PATHS.search} size={13}
-                className="absolute left-0 top-1/2 -translate-y-1/2 opacity-30"
-                style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}
+          {/* Search + Bag */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Icon
+                d={IC.search} size={14}
+                style={{
+                  position: 'absolute', left: 0,
+                  color: searchFocused ? C.caramel : C.faint,
+                  transition: 'color 0.2s',
+                  pointerEvents: 'none',
+                }}
               />
               <input
                 value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search products…"
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Search…"
                 style={{
+                  fontFamily: C.sans, fontSize: '12px', letterSpacing: '0.05em',
+                  color: C.espresso,
                   background: 'transparent', border: 'none', outline: 'none',
-                  borderBottom: `1px solid ${search ? '#F5C518' : '#222'}`,
-                  paddingLeft: '20px', paddingBottom: '2px',
-                  fontSize: '12px', color: '#f0f0f0', width: '160px',
-                  transition: 'border-color 0.2s',
+                  borderBottom: `1px solid ${searchFocused || search ? C.caramel : C.outline}`,
+                  paddingLeft: '22px', paddingBottom: '3px',
+                  width: '170px',
+                  transition: 'border-color 0.25s',
                 }}
               />
             </div>
-            <Icon d={PATHS.cart} size={19} style={{ opacity: 0.5, cursor: 'pointer' }} />
+            <button
+              style={{
+                background: 'none', border: 'none', padding: '4px',
+                color: C.espresso, cursor: 'pointer', opacity: 0.7,
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
+            >
+              <Icon d={IC.bag} size={20} />
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* ══ HERO ════════════════════════════════════════════════════ */}
-      <div style={{
-        background: 'linear-gradient(160deg,#0a0a0a 0%,#12100a 60%,#060606 100%)',
-        borderBottom: '1px solid #141414',
-        padding: '56px 40px 48px',
-        textAlign: 'center',
+      {/* ══ HERO ══════════════════════════════════════════════════════ */}
+      <section style={{
+        maxWidth: '1440px', margin: '0 auto',
+        padding: '80px 64px 80px',
+        display: 'grid',
+        gridTemplateColumns: '1fr 0.65fr',
+        gap: '64px',
+        alignItems: 'center',
+        minHeight: '520px',
       }}>
-        <p style={{
-          fontSize: '10px', fontWeight: 700, letterSpacing: '0.3em',
-          textTransform: 'uppercase', color: '#F5C518', marginBottom: '16px',
-        }}>
-          New Collection · 2026
-        </p>
 
-        <h1 style={{
-          fontFamily: "'Playfair Display', serif",
-          fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-          fontWeight: 700, lineHeight: 1.15,
-          color: '#f5f5f5', margin: '0 auto 16px',
-          letterSpacing: '-0.02em',
-        }}>
-          Discover the{' '}
-          <span style={{ color: '#F5C518' }}>Collection</span>
-        </h1>
-
-        <p style={{
-          fontSize: '13px', color: '#555', marginBottom: '28px',
-          lineHeight: '1.7', maxWidth: '360px', margin: '0 auto 28px',
-        }}>
-          Curated pieces for those who demand the extraordinary.
-        </p>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <button style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            backgroundColor: '#F5C518', color: '#000',
-            fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em',
-            textTransform: 'uppercase', padding: '12px 28px',
-            borderRadius: '2px', border: 'none', cursor: 'pointer',
+        {/* Left — Copy */}
+        <div>
+          {/* Eyebrow */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '10px', fontWeight: 600,
+            letterSpacing: '0.3em', textTransform: 'uppercase',
+            color: C.caramel, marginBottom: '24px',
+            display: 'flex', alignItems: 'center', gap: '12px',
           }}>
-            Shop Now
-          </button>
-          <button style={{
-            display: 'inline-flex', alignItems: 'center',
-            backgroundColor: 'transparent', color: '#f0f0f0',
-            fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em',
-            textTransform: 'uppercase', padding: '12px 28px',
-            borderRadius: '2px', border: '1px solid #2a2a2a', cursor: 'pointer',
+            <span style={{ width: '32px', height: '1px', background: C.caramel, display: 'inline-block', flexShrink: 0 }} />
+            New Collection · 2026
+          </p>
+
+          {/* Headline */}
+          <h1 style={{
+            fontFamily: C.serif,
+            fontSize: 'clamp(3.2rem, 5.5vw, 5.5rem)',
+            fontWeight: 300, lineHeight: 1.08,
+            color: C.espresso,
+            margin: '0 0 8px',
+            letterSpacing: '-0.01em',
           }}>
-            View Lookbook
-          </button>
+            Dressed for the
+          </h1>
+          <h1 style={{
+            fontFamily: C.serif,
+            fontSize: 'clamp(3.2rem, 5.5vw, 5.5rem)',
+            fontWeight: 300, lineHeight: 1.08,
+            fontStyle: 'italic',
+            color: C.walnut,
+            margin: '0 0 32px',
+            letterSpacing: '-0.01em',
+          }}>
+            Extraordinary
+          </h1>
+
+          {/* Tagline */}
+          <p style={{
+            fontFamily: C.sans, fontSize: '15px', fontWeight: 300,
+            lineHeight: 1.8, color: C.walnut,
+            maxWidth: '420px', marginBottom: '44px',
+            letterSpacing: '0.02em',
+          }}>
+            Curated menswear for those who move through the world with quiet confidence and uncommon style.
+          </p>
+
+          {/* CTAs */}
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <button
+              className="snitch-cta-primary"
+              onClick={() => document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Shop the Collection
+              <Icon d={IC.arrow} size={13} />
+            </button>
+            <button className="snitch-cta-ghost">View Lookbook</button>
+          </div>
+        </div>
+
+        {/* Right — Hero Image */}
+        <div style={{
+          aspectRatio: '3/4',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <img
+            src="/hero_model.png"
+            alt="Snitch Summer Collection 2026"
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'top center',
+              display: 'block',
+            }}
+          />
+
+          {/* decorative corner lines */}
+          <div style={{ position: 'absolute', top: '20px', left: '20px', width: '32px', height: '32px', borderTop: `1.5px solid ${C.caramel}`, borderLeft: `1.5px solid ${C.caramel}` }} />
+          <div style={{ position: 'absolute', top: '20px', right: '20px', width: '32px', height: '32px', borderTop: `1.5px solid ${C.caramel}`, borderRight: `1.5px solid ${C.caramel}` }} />
+          <div style={{ position: 'absolute', bottom: '20px', left: '20px', width: '32px', height: '32px', borderBottom: `1.5px solid ${C.caramel}`, borderLeft: `1.5px solid ${C.caramel}` }} />
+          <div style={{ position: 'absolute', bottom: '20px', right: '20px', width: '32px', height: '32px', borderBottom: `1.5px solid ${C.caramel}`, borderRight: `1.5px solid ${C.caramel}` }} />
+
+          {/* bottom label overlay */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            padding: '40px 24px 24px',
+            background: 'linear-gradient(to top, rgba(59,31,12,0.75) 0%, transparent 100%)',
+          }}>
+            <p style={{ fontFamily: C.serif, fontStyle: 'italic', fontSize: '22px', fontWeight: 300, color: C.bg, margin: '0 0 4px' }}>
+              The Summer Edit
+            </p>
+            <p style={{ fontFamily: C.sans, fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: C.sand }}>
+              Collection 2026
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ MARQUEE STRIP ═════════════════════════════════════════════ */}
+      <div style={{
+        overflow: 'hidden',
+        borderTop: `1px solid ${C.sand}`,
+        borderBottom: `1px solid ${C.sand}`,
+        background: C.bgAlt,
+        padding: '13px 0',
+      }}>
+        <div style={{
+          display: 'flex', whiteSpace: 'nowrap',
+          animation: 'marquee-scroll 32s linear infinite',
+          width: 'max-content',
+        }}>
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+            <span key={i} style={{
+              fontFamily: C.sans,
+              fontSize: '10px', fontWeight: 500,
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: item === '·' ? C.caramel : C.walnut,
+              padding: '0 16px',
+            }}>
+              {item}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* ══ PRODUCTS ════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 40px 80px' }}>
+      {/* ══ PRODUCTS ══════════════════════════════════════════════════ */}
+      <section id="products-section" style={{
+        maxWidth: '1440px', margin: '0 auto',
+        padding: '80px 64px 120px',
+      }}>
 
-        {/* toolbar */}
+        {/* Section header */}
         <div style={{
-          display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', marginBottom: '24px',
+          display: 'flex', alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          paddingBottom: '32px',
+          borderBottom: `1px solid ${C.outlineDark}`,
+          marginBottom: '40px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '18px', height: '2px', backgroundColor: '#F5C518' }} />
-            <span style={{
-              fontSize: '10px', fontWeight: 700,
-              letterSpacing: '0.25em', textTransform: 'uppercase', color: '#555',
+          <div>
+            <p style={{
+              fontFamily: C.sans, fontSize: '10px', fontWeight: 600,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              color: C.caramel, marginBottom: '10px',
+            }}>
+              The Edit
+            </p>
+            <h2 style={{
+              fontFamily: C.serif,
+              fontSize: 'clamp(1.8rem, 3vw, 2.6rem)',
+              fontWeight: 400, lineHeight: 1.15,
+              color: C.espresso, margin: 0,
             }}>
               All Products
-            </span>
+            </h2>
           </div>
+
           {!loading && (
-            <span style={{ fontSize: '10px', color: '#333', letterSpacing: '0.1em' }}>
-              {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
-            </span>
+            <p style={{
+              fontFamily: C.sans, fontSize: '12px',
+              color: C.faint, letterSpacing: '0.08em',
+            }}>
+              {filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}
+            </p>
           )}
         </div>
 
-        {/* divider */}
-        <div style={{ height: '1px', backgroundColor: '#111', marginBottom: '28px' }} />
+        {/* Filter chips */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '48px' }}>
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              onClick={() => setActiveFilter(f)}
+              className={`snitch-chip${activeFilter === f ? ' active' : ''}`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
 
-        {/* grid */}
+        {/* Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: '16px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gap: '40px 32px',
         }}>
           {loading
             ? Array.from({ length: 8 }).map((_, i) => <CardSkeleton key={i} />)
@@ -279,44 +582,103 @@ const Home = () => {
               ? (
                 <div style={{
                   gridColumn: '1/-1', textAlign: 'center',
-                  padding: '80px 0', color: '#444', fontSize: '13px',
+                  padding: '120px 0',
                 }}>
-                  No products found
+                  <Icon d={IC.bag} size={40} style={{ color: C.outline, margin: '0 auto 20px', display: 'block' }} />
+                  <p style={{ fontFamily: C.serif, fontSize: '24px', fontWeight: 400, color: C.muted }}>No products found</p>
+                  <p style={{ fontFamily: C.sans, fontSize: '12px', color: C.faint, letterSpacing: '0.08em', marginTop: '8px' }}>
+                    Try a different search term
+                  </p>
                 </div>
               )
-              : filtered.map(p => <ProductCard
-                key={p._id}
-                product={p}
-                onClick={() => navigate(`/product/${p._id}`)} />)
+              : filtered.map((p) => (
+                  <ProductCard
+                    key={p._id}
+                    product={p}
+                    onClick={() => navigate(`/product/${p._id}`)}
+                  />
+                ))
           }
         </div>
-      </div>
+      </section>
 
-      {/* ══ FOOTER ══════════════════════════════════════════════════ */}
-      <footer style={{
-        borderTop: '1px solid #111', backgroundColor: '#060606',
-        padding: '20px 40px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: '12px',
-      }}>
-        <span style={{
-          fontSize: '10px', fontWeight: 900, letterSpacing: '0.25em',
-          textTransform: 'uppercase', color: '#F5C518',
-          border: '1px solid rgba(245,197,24,0.25)',
-          padding: '2px 7px', borderRadius: '2px',
+      {/* ══ FOOTER ════════════════════════════════════════════════════ */}
+      <footer style={{ background: C.sand, borderTop: `1px solid ${C.outline}` }}>
+
+        {/* Top columns */}
+        <div style={{
+          maxWidth: '1440px', margin: '0 auto',
+          padding: '64px 64px 48px',
+          display: 'grid',
+          gridTemplateColumns: '1.4fr 1fr 1fr',
+          gap: '48px',
         }}>
-          Snitch
-        </span>
-        <span style={{ fontSize: '10px', color: '#2a2a2a', letterSpacing: '0.1em' }}>
-          © 2026 Snitch. All rights reserved.
-        </span>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          {['Privacy', 'Terms', 'Contact'].map(l => (
-            <a key={l} href="#" style={{
-              fontSize: '10px', color: '#2a2a2a',
-              textDecoration: 'none', letterSpacing: '0.1em',
-            }}>{l}</a>
-          ))}
+
+          {/* Brand */}
+          <div>
+            <span style={{
+              fontFamily: C.serif,
+              fontSize: '28px', fontWeight: 400,
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: C.espresso, display: 'block', marginBottom: '16px',
+            }}>
+              Snitch
+            </span>
+            <p style={{
+              fontFamily: C.sans, fontSize: '13px', fontWeight: 300,
+              lineHeight: 1.85, color: C.walnut,
+              maxWidth: '240px',
+            }}>
+              Premium menswear crafted for the modern gentleman. Quiet luxury, extraordinary fit.
+            </p>
+          </div>
+
+          {/* Navigate */}
+          <div>
+            <p style={{
+              fontFamily: C.sans, fontSize: '9px', fontWeight: 600,
+              letterSpacing: '0.28em', textTransform: 'uppercase',
+              color: C.caramel, marginBottom: '24px',
+            }}>
+              Navigate
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {['Collections', 'New Arrivals', 'Lookbook', 'About Us'].map((l) => (
+                <a key={l} href="#" className="snitch-footer-link">{l}</a>
+              ))}
+            </div>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <p style={{
+              fontFamily: C.sans, fontSize: '9px', fontWeight: 600,
+              letterSpacing: '0.28em', textTransform: 'uppercase',
+              color: C.caramel, marginBottom: '24px',
+            }}>
+              Legal
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {['Privacy Policy', 'Terms of Service', 'Contact Us'].map((l) => (
+                <a key={l} href="#" className="snitch-footer-link">{l}</a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div style={{
+          borderTop: `1px solid ${C.outline}`,
+          maxWidth: '1440px', margin: '0 auto',
+          padding: '20px 64px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <span style={{ fontFamily: C.sans, fontSize: '11px', color: C.walnut, letterSpacing: '0.06em' }}>
+            © 2026 Snitch. All rights reserved.
+          </span>
+          <span style={{ fontFamily: C.sans, fontSize: '11px', color: C.faint, letterSpacing: '0.06em' }}>
+            Crafted with precision.
+          </span>
         </div>
       </footer>
     </div>

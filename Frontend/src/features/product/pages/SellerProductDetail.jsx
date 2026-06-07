@@ -2,14 +2,46 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useProduct } from '../hook/useProduct'
 
-/* ── Icon ────────────────────────────────────────────────────────── */
-const Icon = ({ d, size = 16, className = '', style = {} }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth={1.7} strokeLinecap="round"
-    strokeLinejoin="round" className={className} style={style}>
+/* ── Design tokens ──────────────────────────────────────────────── */
+const T = {
+  bg:        '#fdf9f3',
+  espresso:  '#3b1f0c',
+  walnut:    '#7b4a2d',
+  caramel:   '#c17a3f',
+  sand:      '#e8d5b7',
+  outline:   '#d4c3ba',
+  faint:     '#82746d',
+  white:     '#ffffff',
+  surface:   '#f1ede7',
+}
+const FONT_SERIF  = "'EB Garamond', Georgia, serif"
+const FONT_SANS   = "'DM Sans', system-ui, sans-serif"
+
+/* ── Google Fonts injection ─────────────────────────────────────── */
+const FontStyle = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.45; }
+    }
+    .snitch-skeleton { animation: pulse 1.6s ease-in-out infinite; }
+  `}</style>
+)
+
+/* ── SVG Icon Helper ────────────────────────────────────────────── */
+const Icon = ({ d, size = 16, style = {} }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke="currentColor"
+    strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"
+    style={{ display: 'inline-block', flexShrink: 0, ...style }}>
     <path d={d} />
   </svg>
 )
+
 const IC = {
   back:    'M19 12H5M12 5l-7 7 7 7',
   plus:    'M12 5v14M5 12h14',
@@ -25,42 +57,56 @@ const IC = {
   layers:  'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
 }
 
-/* ── helpers ─────────────────────────────────────────────────────── */
+/* ── Helpers ────────────────────────────────────────────────────── */
 const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
 
-/* ── Toast notification ──────────────────────────────────────────── */
-const Toast = ({ msg, type }) => (
-  <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-sm text-sm font-semibold shadow-xl"
-    style={{
-      backgroundColor: type === 'success' ? '#0f2a1a' : '#2a0f0f',
-      border: `1px solid ${type === 'success' ? '#22c55e40' : '#ef444440'}`,
-      color: type === 'success' ? '#4ade80' : '#f87171',
-    }}>
-    <Icon d={type === 'success' ? IC.check : IC.x} size={15} />
-    {msg}
-  </div>
-)
+/* ── Reusable Form Field ────────────────────────────────────────── */
+const Field = ({ label, type = 'text', value, onChange, placeholder, style = {} }) => {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', ...style }}>
+      <label style={{
+        fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+        letterSpacing: '0.15em', textTransform: 'uppercase',
+        color: focused ? T.caramel : T.faint, transition: 'color 0.2s',
+      }}>
+        {label}
+      </label>
+      <input
+        type={type} value={value} onChange={onChange} placeholder={placeholder}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          fontFamily: FONT_SANS, fontSize: '14px', color: T.espresso,
+          background: 'transparent', border: 'none', outline: 'none',
+          borderBottom: `1px solid ${focused ? T.caramel : T.outline}`,
+          padding: '8px 0 8px', transition: 'border-color 0.25s',
+          width: '100%',
+        }}
+      />
+    </div>
+  )
+}
 
-/* ── Skeleton ────────────────────────────────────────────────────── */
+/* ── Skeleton ───────────────────────────────────────────────────── */
 const PageSkeleton = () => (
-  <div className="animate-pulse max-w-screen-xl mx-auto px-6 md:px-12 py-10 flex flex-col gap-8">
-    <div className="flex gap-8">
-      <div className="w-48 h-64 rounded-sm bg-[#111]" />
-      <div className="flex-1 flex flex-col gap-3 pt-2">
-        <div className="h-8 w-2/3 rounded bg-[#111]" />
-        <div className="h-4 w-1/4 rounded bg-[#111]" />
-        <div className="h-3 w-full rounded bg-[#111] mt-2" />
-        <div className="h-3 w-3/4 rounded bg-[#111]" />
+  <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '48px 64px' }} className="snitch-skeleton">
+    <div style={{ display: 'flex', flexDirection: 'row', gap: '48px', flexWrap: 'wrap' }}>
+      <div style={{ width: '288px', height: '380px', backgroundColor: T.sand, opacity: 0.5 }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
+        <div style={{ height: '12px', width: '120px', backgroundColor: T.sand }} />
+        <div style={{ height: '40px', width: '80%', backgroundColor: T.sand }} />
+        <div style={{ height: '1px', width: '48px', backgroundColor: T.outline }} />
+        <div style={{ height: '32px', width: '150px', backgroundColor: T.sand }} />
+        <div style={{ height: '12px', width: '100%', backgroundColor: T.sand }} />
+        <div style={{ height: '12px', width: '70%', backgroundColor: T.sand }} />
       </div>
     </div>
-    <div className="h-px bg-[#1a1a1a]" />
-    {[1, 2].map(i => (
-      <div key={i} className="h-40 rounded-sm bg-[#0f0f0f]" style={{ border: '1px solid #1a1a1a' }} />
-    ))}
   </div>
 )
 
-/* ── Add Variant Form (slide-up panel) ───────────────────────────── */
+/* ── Add Variant Form (slide-up panel) ──────────────────────────── */
 const AddVariantForm = ({ productId, onClose, onCreated }) => {
   const { handleCreateVariant } = useProduct()
 
@@ -71,6 +117,7 @@ const AddVariantForm = ({ productId, onClose, onCreated }) => {
   const [previews,   setPreviews]   = useState([])      // blob URLs
   const [submitting, setSubmitting] = useState(false)
   const [error,      setError]      = useState('')
+  const [dragOver,   setDragOver]   = useState(false)
 
   const addAttr  = () => setAttrs(a => [...a, { key: '', value: '' }])
   const rmAttr   = (i) => setAttrs(a => a.filter((_, idx) => idx !== i))
@@ -112,52 +159,108 @@ const AddVariantForm = ({ productId, onClose, onCreated }) => {
     }
   }
 
-  const inputCls = "w-full bg-transparent text-sm outline-none px-3 py-2.5 rounded-sm placeholder-[#333]"
-  const inputStyle = { border: '1px solid #222', color: '#f0f0f0' }
-
   return (
-    <div className="fixed inset-0 z-40 flex justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
-      <div
-        className="h-full flex flex-col overflow-y-auto"
-        style={{ width: '480px', backgroundColor: '#0a0a0a', borderLeft: '1px solid #1a1a1a' }}
-      >
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 999,
+        backgroundColor: 'rgba(59,31,12,0.4)', backdropFilter: 'blur(4px)',
+        display: 'flex', justifyContent: 'flex-end',
+      }}
+    >
+      <div style={{
+        height: '100%', width: '480px', maxWidth: '100%',
+        backgroundColor: T.bg, borderLeft: `1px solid ${T.outline}`,
+        boxShadow: '-4px 0 24px rgba(59,31,12,0.08)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 sticky top-0 z-10"
-          style={{ backgroundColor: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
+        <div style={{
+          padding: '24px 32px', borderBottom: `1px solid ${T.outline}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
           <div>
-            <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: '#F5C518' }}>New Variant</p>
-            <h2 className="text-lg font-semibold mt-0.5" style={{ fontFamily: "'Playfair Display', serif" }}>Add Product Variant</h2>
+            <p style={{ fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: T.caramel, margin: 0 }}>New Variant</p>
+            <h2 style={{ fontFamily: FONT_SERIF, fontSize: '22px', fontWeight: 300, color: T.espresso, margin: '4px 0 0 0' }}>Add Product Variant</h2>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-sm hover:bg-white/5 transition-colors"
-            style={{ border: '1px solid #222' }}>
-            <Icon d={IC.x} size={15} style={{ color: '#666' }} />
+          <button
+            onClick={onClose}
+            style={{
+              width: '32px', height: '32px', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', border: `1px solid ${T.outline}`,
+              background: 'transparent', cursor: 'pointer', outline: 'none',
+            }}
+          >
+            <Icon d={IC.x} size={14} style={{ color: T.espresso }} />
           </button>
         </div>
 
-        <div className="flex flex-col gap-6 px-6 py-6">
-
+        {/* Content */}
+        <div style={{
+          flex: 1, overflowY: 'auto', padding: '32px 32px',
+          display: 'flex', flexDirection: 'column', gap: '28px',
+        }}>
           {/* Attributes */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#555' }}>Attributes</label>
-              <button onClick={addAttr} className="text-[10px] font-bold tracking-wider uppercase flex items-center gap-1"
-                style={{ color: '#F5C518' }}>
-                <Icon d={IC.plus} size={11} /> Add
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <label style={{ fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: T.caramel }}>
+                Attributes
+              </label>
+              <button
+                type="button"
+                onClick={addAttr}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: T.caramel, background: 'transparent', border: 'none',
+                  cursor: 'pointer', outline: 'none',
+                }}
+              >
+                + Add Attribute
               </button>
             </div>
-            <div className="flex flex-col gap-2">
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {attrs.map((a, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input value={a.key} onChange={e => setAttr(i, 'key', e.target.value)}
-                    placeholder="Name (e.g. Size)"
-                    className={`${inputCls} flex-1`} style={inputStyle} />
-                  <input value={a.value} onChange={e => setAttr(i, 'value', e.target.value)}
-                    placeholder="Value (e.g. L)"
-                    className={`${inputCls} flex-1`} style={inputStyle} />
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <input
+                      value={a.key}
+                      onChange={e => setAttr(i, 'key', e.target.value)}
+                      placeholder="Name (e.g. Size)"
+                      style={{
+                        fontFamily: FONT_SANS, fontSize: '13px', color: T.espresso,
+                        background: 'transparent', border: 'none', outline: 'none',
+                        borderBottom: `1px solid ${T.outline}`,
+                        padding: '6px 0', width: '100%',
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <input
+                      value={a.value}
+                      onChange={e => setAttr(i, 'value', e.target.value)}
+                      placeholder="Value (e.g. L)"
+                      style={{
+                        fontFamily: FONT_SANS, fontSize: '13px', color: T.espresso,
+                        background: 'transparent', border: 'none', outline: 'none',
+                        borderBottom: `1px solid ${T.outline}`,
+                        padding: '6px 0', width: '100%',
+                      }}
+                    />
+                  </div>
                   {attrs.length > 1 && (
-                    <button onClick={() => rmAttr(i)} className="w-8 h-9 flex items-center justify-center rounded-sm flex-shrink-0"
-                      style={{ border: '1px solid #222' }}>
-                      <Icon d={IC.x} size={12} style={{ color: '#555' }} />
+                    <button
+                      type="button"
+                      onClick={() => rmAttr(i)}
+                      style={{
+                        width: '32px', height: '32px', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', border: `1px solid ${T.outline}`,
+                        background: 'transparent', cursor: 'pointer', outline: 'none',
+                      }}
+                    >
+                      <Icon d={IC.x} size={12} style={{ color: T.walnut }} />
                     </button>
                   )}
                 </div>
@@ -166,71 +269,139 @@ const AddVariantForm = ({ productId, onClose, onCreated }) => {
           </div>
 
           {/* Price */}
-          <div>
-            <label className="block text-[10px] font-bold tracking-widest uppercase mb-2" style={{ color: '#555' }}>Price</label>
-            <div className="flex gap-2">
-              <input value={price.amount} onChange={e => setPrice(p => ({ ...p, amount: e.target.value }))}
-                placeholder="Amount" type="number" min="0"
-                className={`${inputCls} flex-1`} style={inputStyle} />
-              <select value={price.currency} onChange={e => setPrice(p => ({ ...p, currency: e.target.value }))}
-                className="px-3 py-2.5 rounded-sm text-sm outline-none bg-transparent"
-                style={{ border: '1px solid #222', color: '#f0f0f0', minWidth: '80px' }}>
-                <option value="INR" style={{ backgroundColor: '#111' }}>INR</option>
-                <option value="USD" style={{ backgroundColor: '#111' }}>USD</option>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <Field
+              label="Price Amount"
+              type="number"
+              value={price.amount}
+              onChange={e => setPrice(p => ({ ...p, amount: e.target.value }))}
+              placeholder="e.g. 1499"
+              style={{ flex: 1 }}
+            />
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '120px' }}>
+              <label style={{
+                fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+                letterSpacing: '0.15em', textTransform: 'uppercase', color: T.faint,
+              }}>
+                Currency
+              </label>
+              <select
+                value={price.currency}
+                onChange={e => setPrice(p => ({ ...p, currency: e.target.value }))}
+                style={{
+                  fontFamily: FONT_SANS, fontSize: '14px', color: T.espresso,
+                  background: 'transparent', border: 'none', outline: 'none',
+                  borderBottom: `1px solid ${T.outline}`,
+                  padding: '8px 0 8px', cursor: 'pointer', width: '100%',
+                }}
+              >
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
               </select>
             </div>
           </div>
 
           {/* Stock */}
-          <div>
-            <label className="block text-[10px] font-bold tracking-widest uppercase mb-2" style={{ color: '#555' }}>Initial Stock</label>
-            <div className="flex items-center gap-0">
-              <button onClick={() => setStock(s => String(Math.max(0, Number(s) - 1)))}
-                className="w-10 h-10 flex items-center justify-center rounded-l-sm"
-                style={{ border: '1px solid #222', borderRight: 'none' }}>
-                <Icon d={IC.minus} size={14} style={{ color: '#666' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: T.faint }}>
+              Initial Stock
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setStock(s => String(Math.max(0, Number(s) - 1)))}
+                style={{
+                  width: '36px', height: '36px', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', border: `1px solid ${T.espresso}`,
+                  background: T.bg, cursor: 'pointer', outline: 'none',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = T.sand}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = T.bg}
+              >
+                <Icon d={IC.minus} size={12} style={{ color: T.espresso }} />
               </button>
-              <input value={stock} onChange={e => setStock(e.target.value)} type="number" min="0"
-                className="w-16 h-10 text-center text-sm bg-transparent outline-none"
-                style={{ border: '1px solid #222', borderLeft: 'none', borderRight: 'none', color: '#f0f0f0' }} />
-              <button onClick={() => setStock(s => String(Number(s) + 1))}
-                className="w-10 h-10 flex items-center justify-center rounded-r-sm"
-                style={{ border: '1px solid #222', borderLeft: 'none' }}>
-                <Icon d={IC.plus} size={14} style={{ color: '#666' }} />
+              <input
+                type="number" min="0" value={stock}
+                onChange={e => setStock(e.target.value)}
+                style={{
+                  width: '56px', height: '36px', textAlign: 'center', fontFamily: FONT_SANS,
+                  fontSize: '13px', color: T.espresso, background: 'transparent',
+                  borderTop: `1px solid ${T.espresso}`, borderBottom: `1px solid ${T.espresso}`,
+                  borderLeft: 'none', borderRight: 'none', outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setStock(s => String(Number(s) + 1))}
+                style={{
+                  width: '36px', height: '36px', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', border: `1px solid ${T.espresso}`,
+                  background: T.bg, cursor: 'pointer', outline: 'none',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = T.sand}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = T.bg}
+              >
+                <Icon d={IC.plus} size={12} style={{ color: T.espresso }} />
               </button>
             </div>
           </div>
 
           {/* Images upload */}
-          <div>
-            <label className="block text-[10px] font-bold tracking-widest uppercase mb-2" style={{ color: '#555' }}>Images</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: T.faint }}>
+              Images
+            </label>
 
-            {/* Drag-drop zone */}
+            {/* Drag drop zone */}
             <label
-              className="flex flex-col items-center justify-center gap-2 cursor-pointer rounded-sm transition-colors hover:border-[#F5C518]/40"
-              style={{ border: '2px dashed #222', padding: '24px', backgroundColor: '#0f0f0f' }}
-              onDragOver={e => { e.preventDefault() }}
-              onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}
+              onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files) }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', gap: '12px', padding: '32px 24px',
+                backgroundColor: dragOver ? T.surface : T.bg,
+                border: `2px dashed ${dragOver ? T.caramel : T.outline}`,
+                cursor: 'pointer', transition: 'all 0.25s',
+                textAlign: 'center',
+              }}
             >
-              <Icon d={IC.upload} size={28} style={{ color: '#333' }} />
-              <p className="text-xs text-center" style={{ color: '#555' }}>
+              <Icon d={IC.upload} size={28} style={{ color: dragOver ? T.caramel : T.walnut }} />
+              <div style={{ fontFamily: FONT_SANS, fontSize: '13px', color: T.espresso }}>
                 Drag & drop images here<br />
-                <span style={{ color: '#F5C518' }}>or click to browse</span>
-              </p>
-              <input type="file" accept="image/*" multiple className="hidden"
-                onChange={e => handleFiles(e.target.files)} />
+                <span style={{ color: T.caramel, textDecoration: 'underline' }}>or click to browse</span>
+              </div>
+              <span style={{ fontFamily: FONT_SANS, fontSize: '10px', color: T.faint }}>
+                PNG, JPG, WEBP — UP TO 10MB
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={e => handleFiles(e.target.files)}
+                style={{ display: 'none' }}
+              />
             </label>
 
             {/* Previews */}
             {previews.length > 0 && (
-              <div className="flex gap-2 flex-wrap mt-3">
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
                 {previews.map((src, i) => (
-                  <div key={i} className="relative flex-shrink-0" style={{ width: '64px', height: '64px' }}>
-                    <img src={src} className="w-full h-full object-cover rounded-sm" style={{ border: '1px solid #1a1a1a' }} />
-                    <button onClick={() => removeImg(i)}
-                      className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center rounded-full"
-                      style={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}>
-                      <Icon d={IC.x} size={8} style={{ color: '#888' }} />
+                  <div key={i} style={{ position: 'relative', width: '64px', height: '80px', border: `1px solid ${T.outline}`, backgroundColor: T.surface }}>
+                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button
+                      type="button"
+                      onClick={() => removeImg(i)}
+                      style={{
+                        position: 'absolute', top: '-6px', right: '-6px',
+                        width: '18px', height: '18px', borderRadius: '50%',
+                        backgroundColor: T.espresso, border: 'none',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', outline: 'none', boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                      }}
+                    >
+                      <Icon d={IC.x} size={10} style={{ color: T.white }} />
                     </button>
                   </div>
                 ))}
@@ -238,22 +409,49 @@ const AddVariantForm = ({ productId, onClose, onCreated }) => {
             )}
           </div>
 
-          {/* Error */}
-          {error && <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>}
+          {error && (
+            <p style={{ fontFamily: FONT_SANS, fontSize: '12px', color: '#991b1b', margin: 0 }}>
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Footer actions */}
-        <div className="sticky bottom-0 flex gap-3 px-6 py-5 mt-auto"
-          style={{ backgroundColor: '#0a0a0a', borderTop: '1px solid #1a1a1a' }}>
-          <button onClick={onClose}
-            className="flex-1 h-11 text-xs font-bold tracking-widest uppercase rounded-sm transition-colors hover:bg-white/5"
-            style={{ border: '1px solid #222', color: '#666' }}>
+        <div style={{
+          padding: '24px 32px', borderTop: `1px solid ${T.outline}`,
+          backgroundColor: T.bg, display: 'flex', gap: '16px',
+        }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              flex: 1, height: '44px', border: `1px solid ${T.espresso}`,
+              background: 'transparent', color: T.espresso,
+              fontFamily: FONT_SANS, fontSize: '11px', fontWeight: 600,
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              cursor: 'pointer', outline: 'none', transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = T.sand}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
             Cancel
           </button>
-          <button onClick={submit} disabled={submitting}
-            className="flex-1 h-11 text-xs font-bold tracking-widest uppercase rounded-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-            style={{ backgroundColor: '#F5C518', color: '#000' }}>
-            {submitting ? 'Creating…' : 'Create Variant'}
+          <button
+            type="button"
+            onClick={submit}
+            disabled={submitting}
+            style={{
+              flex: 1, height: '44px', border: `1px solid ${T.espresso}`,
+              background: T.espresso, color: T.bg,
+              fontFamily: FONT_SANS, fontSize: '11px', fontWeight: 600,
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              cursor: submitting ? 'not-allowed' : 'pointer', outline: 'none',
+              opacity: submitting ? 0.6 : 1, transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => { if(!submitting) e.currentTarget.style.backgroundColor = T.walnut }}
+            onMouseLeave={e => { if(!submitting) e.currentTarget.style.backgroundColor = T.espresso }}
+          >
+            {submitting ? 'Creating...' : 'Create Variant'}
           </button>
         </div>
       </div>
@@ -261,7 +459,7 @@ const AddVariantForm = ({ productId, onClose, onCreated }) => {
   )
 }
 
-/* ── Variant Card ────────────────────────────────────────────────── */
+/* ── Variant Card ───────────────────────────────────────────────── */
 const VariantCard = ({ variant, productId, onDelete, onStockUpdated }) => {
   const { handleUpdateVariantStock, handleDeleteVariant } = useProduct()
 
@@ -269,6 +467,7 @@ const VariantCard = ({ variant, productId, onDelete, onStockUpdated }) => {
   const [updating,  setUpdating]  = useState(false)
   const [deleting,  setDeleting]  = useState(false)
   const [stockMsg,  setStockMsg]  = useState('')
+  const [isTrashHover, setIsTrashHover] = useState(false)
 
   const attrs = variant.attributes
     ? Object.entries(
@@ -305,94 +504,149 @@ const VariantCard = ({ variant, productId, onDelete, onStockUpdated }) => {
 
   return (
     <div
-      className="flex flex-col gap-5 rounded-sm p-5"
       style={{
-        backgroundColor: '#0f0f0f',
-        border: '1px solid #1a1a1a',
-        borderLeft: '3px solid #F5C518',
+        display: 'flex', flexDirection: 'column', gap: '20px',
+        padding: '24px', backgroundColor: T.white,
+        border: `1px solid ${T.outline}`,
+        borderLeft: `3px solid ${T.caramel}`,
+        transition: 'transform 0.2s, box-shadow 0.2s',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-1px)'
+        e.currentTarget.style.boxShadow = '0 4px 20px rgba(59,31,12,0.06)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = 'none'
       }}
     >
-      {/* Top row: attributes + actions */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Attribute chips */}
+      {/* Top row: attributes + delete action */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyBetween: 'space-between', gap: '16px', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
           {attrs.map(([k, v]) => (
-            <span key={k}
-              className="text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: '#1a1a1a', color: '#888', border: '1px solid #222' }}>
-              {k}: {v}
+            <span key={k} style={{
+              fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+              letterSpacing: '0.05em', textTransform: 'uppercase',
+              padding: '4px 10px', backgroundColor: T.surface,
+              color: T.espresso, border: `1px solid ${T.outline}`,
+            }}>
+              {cap(k)}: {cap(v)}
             </span>
           ))}
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button onClick={doDelete} disabled={deleting}
-            className="w-8 h-8 flex items-center justify-center rounded-sm transition-colors hover:bg-red-500/10 disabled:opacity-40"
-            style={{ border: '1px solid #222' }}>
-            <Icon d={IC.trash} size={13} style={{ color: '#f87171' }} />
-          </button>
-        </div>
+        <button
+          onClick={doDelete}
+          disabled={deleting}
+          onMouseEnter={() => setIsTrashHover(true)}
+          onMouseLeave={() => setIsTrashHover(false)}
+          style={{
+            width: '32px', height: '32px', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', border: `1px solid ${isTrashHover ? '#ef4444' : T.outline}`,
+            background: isTrashHover ? '#fef2f2' : 'transparent',
+            cursor: deleting ? 'not-allowed' : 'pointer', outline: 'none',
+            opacity: deleting ? 0.4 : 1, transition: 'all 0.15s',
+          }}
+        >
+          <Icon d={IC.trash} size={14} style={{ color: isTrashHover ? '#ef4444' : T.walnut }} />
+        </button>
       </div>
 
-      {/* Price + images row */}
-      <div className="flex items-center gap-6 flex-wrap">
-        {/* Price */}
+      {/* Price + Variant images */}
+      <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
         <div>
-          <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: '#444' }}>Price</p>
-          <p className="text-lg font-bold" style={{ color: '#F5C518' }}>
+          <p style={{ fontFamily: FONT_SANS, fontSize: '9px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: T.faint, margin: '0 0 4px 0' }}>Price</p>
+          <p style={{ fontFamily: FONT_SERIF, fontSize: '18px', fontWeight: 400, color: T.caramel, margin: 0 }}>
             ₹{Number(variant.price?.amount || 0).toLocaleString('en-IN')}
-            <span className="text-[10px] font-normal ml-1" style={{ color: '#333' }}>{variant.price?.currency || 'INR'}</span>
+            <span style={{ fontFamily: FONT_SANS, fontSize: '10px', color: T.faint, marginLeft: '4px' }}>
+              {variant.price?.currency || 'INR'}
+            </span>
           </p>
         </div>
 
-        {/* Variant images */}
         {variant.images?.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
-            {variant.images.map((img, i) => (
-              <div key={i} className="w-12 h-12 rounded-sm overflow-hidden flex-shrink-0" style={{ border: '1px solid #1a1a1a' }}>
-                <img src={img.url} alt="" className="w-full h-full object-cover" />
-              </div>
-            ))}
+          <div>
+            <p style={{ fontFamily: FONT_SANS, fontSize: '9px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: T.faint, margin: '0 0 4px 0' }}>Images</p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {variant.images.map((img, i) => (
+                <div key={i} style={{
+                  width: '40px', height: '50px', overflow: 'hidden', flexShrink: 0,
+                  border: `1px solid ${T.outline}`, backgroundColor: T.surface,
+                }}>
+                  <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Stock management row */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div>
-          <p className="text-[9px] font-bold tracking-widest uppercase mb-1.5" style={{ color: '#444' }}>Stock</p>
-          <div className="flex items-center gap-0">
+      {/* Stock Management */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', paddingTop: '12px', borderTop: `1px solid ${T.outline}` }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ fontFamily: FONT_SANS, fontSize: '9px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: T.faint }}>Stock Level</span>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <button
+              type="button"
               onClick={() => setStockVal(s => String(Math.max(0, Number(s) - 1)))}
-              className="w-9 h-9 flex items-center justify-center"
-              style={{ border: '1px solid #222', borderRight: 'none', borderRadius: '2px 0 0 2px' }}>
-              <Icon d={IC.minus} size={13} style={{ color: '#666' }} />
+              style={{
+                width: '32px', height: '32px', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', border: `1px solid ${T.espresso}`,
+                background: T.bg, cursor: 'pointer', outline: 'none',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = T.sand}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = T.bg}
+            >
+              <Icon d={IC.minus} size={11} style={{ color: T.espresso }} />
             </button>
             <input
               type="number" min="0" value={stockVal}
               onChange={e => setStockVal(e.target.value)}
-              className="w-16 h-9 text-center text-sm bg-transparent outline-none"
-              style={{ border: '1px solid #222', borderLeft: 'none', borderRight: 'none', color: '#f0f0f0' }}
+              style={{
+                width: '52px', height: '32px', textAlign: 'center', fontFamily: FONT_SANS,
+                fontSize: '13px', color: T.espresso, background: 'transparent',
+                borderTop: `1px solid ${T.espresso}`, borderBottom: `1px solid ${T.espresso}`,
+                borderLeft: 'none', borderRight: 'none', outline: 'none',
+              }}
             />
             <button
+              type="button"
               onClick={() => setStockVal(s => String(Number(s) + 1))}
-              className="w-9 h-9 flex items-center justify-center"
-              style={{ border: '1px solid #222', borderLeft: 'none', borderRadius: '0 2px 2px 0' }}>
-              <Icon d={IC.plus} size={13} style={{ color: '#666' }} />
+              style={{
+                width: '32px', height: '32px', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', border: `1px solid ${T.espresso}`,
+                background: T.bg, cursor: 'pointer', outline: 'none',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = T.sand}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = T.bg}
+            >
+              <Icon d={IC.plus} size={11} style={{ color: T.espresso }} />
             </button>
           </div>
         </div>
 
-        <div className="flex items-end gap-2 pb-0.5">
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '52px' }}>
           <button
             onClick={updateStock} disabled={updating}
-            className="text-[10px] font-bold tracking-widest uppercase px-4 h-9 rounded-sm transition-opacity hover:opacity-85 disabled:opacity-50 mt-auto"
-            style={{ backgroundColor: '#F5C518', color: '#000' }}>
-            {updating ? '…' : 'Update Stock'}
+            style={{
+              height: '32px', border: `1px solid ${T.espresso}`,
+              backgroundColor: T.espresso, color: T.bg,
+              fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              padding: '0 16px', cursor: 'pointer', outline: 'none',
+              opacity: updating ? 0.6 : 1, transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => { if(!updating) e.currentTarget.style.backgroundColor = T.walnut }}
+            onMouseLeave={e => { if(!updating) e.currentTarget.style.backgroundColor = T.espresso }}
+          >
+            {updating ? 'Updating...' : 'Update Stock'}
           </button>
           {stockMsg && (
-            <span className="text-[10px] font-semibold"
-              style={{ color: stockMsg === 'Updated!' ? '#4ade80' : '#f87171' }}>
+            <span style={{
+              fontFamily: FONT_SANS, fontSize: '11px', fontWeight: 600,
+              color: stockMsg === 'Updated!' ? '#166534' : '#991b1b',
+              paddingBottom: '8px',
+            }}>
               {stockMsg}
             </span>
           )}
@@ -402,9 +656,28 @@ const VariantCard = ({ variant, productId, onDelete, onStockUpdated }) => {
   )
 }
 
+/* ── Toast Notification ─────────────────────────────────────────── */
+const Toast = ({ msg, type }) => {
+  const isSuccess = type === 'success'
+  return (
+    <div style={{
+      position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000,
+      display: 'flex', alignItems: 'center', gap: '10px',
+      padding: '12px 20px', fontFamily: FONT_SANS, fontSize: '13px', fontWeight: 500,
+      backgroundColor: isSuccess ? '#f0fdf4' : '#fef2f2',
+      border: `1px solid ${isSuccess ? '#bbf7d0' : '#fecaca'}`,
+      color: isSuccess ? '#166534' : '#991b1b',
+      boxShadow: '0 4px 16px rgba(59,31,12,0.06)',
+    }}>
+      <Icon d={isSuccess ? IC.check : IC.x} size={16} style={{ color: isSuccess ? '#166534' : '#991b1b' }} />
+      {msg}
+    </div>
+  )
+}
+
 /* ════════════════════════════════════════════════════════════════════
    MAIN PAGE
-════════════════════════════════════════════════════════════════════ */
+   ════════════════════════════════════════════════════════════════════ */
 const SellerProductDetail = () => {
   const { productId } = useParams()
   const navigate      = useNavigate()
@@ -455,20 +728,36 @@ const SellerProductDetail = () => {
   }
 
   if (loading) return (
-    <div style={{ backgroundColor: '#060606', minHeight: '100vh' }}>
-      <div className="h-14" style={{ backgroundColor: '#060606', borderBottom: '1px solid #161616' }} />
+    <div style={{ backgroundColor: T.bg, minHeight: '100vh', fontFamily: FONT_SANS }}>
+      <FontStyle />
+      <nav style={{
+        height: '64px', backgroundColor: T.bg, borderBottom: `1px solid ${T.outline}`,
+        display: 'flex', alignItems: 'center', padding: '0 64px',
+      }} />
       <PageSkeleton />
     </div>
   )
 
   if (!product) return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4"
-      style={{ backgroundColor: '#060606', color: '#f0f0f0' }}>
-      <Icon d={IC.package} size={48} className="opacity-10" />
-      <p className="text-sm" style={{ color: '#555' }}>Product not found</p>
-      <button onClick={() => navigate('/seller/dashboard')}
-        className="text-xs font-bold tracking-widest uppercase px-5 py-2.5 rounded-sm"
-        style={{ backgroundColor: '#F5C518', color: '#000' }}>
+    <div style={{
+      minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: '20px',
+      backgroundColor: T.bg, color: T.espresso, fontFamily: FONT_SANS,
+    }}>
+      <FontStyle />
+      <Icon d={IC.package} size={48} style={{ color: T.outline }} />
+      <p style={{ fontFamily: FONT_SERIF, fontSize: '20px', margin: 0 }}>Product not found</p>
+      <button
+        onClick={() => navigate('/seller/dashboard')}
+        style={{
+          fontFamily: FONT_SANS, fontSize: '11px', fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          padding: '14px 28px', backgroundColor: T.espresso, color: T.bg,
+          border: 'none', cursor: 'pointer', transition: 'background-color 0.2s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = T.walnut}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = T.espresso}
+      >
         Back to Dashboard
       </button>
     </div>
@@ -478,47 +767,81 @@ const SellerProductDetail = () => {
   const variants = product.variants || []
 
   return (
-    <div style={{ backgroundColor: '#060606', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#f0f0f0' }}>
+    <div style={{ backgroundColor: T.bg, minHeight: '100vh', fontFamily: FONT_SANS, color: T.espresso, paddingBottom: '64px' }}>
+      <FontStyle />
 
       {/* ══ NAVBAR ══════════════════════════════════════════════════ */}
-      <nav className="sticky top-0 z-30 flex items-center justify-between px-6 md:px-12 h-14"
-        style={{ backgroundColor: 'rgba(6,6,6,0.93)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #161616' }}>
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/seller/dashboard')}
-            className="flex items-center justify-center w-8 h-8 rounded-sm hover:bg-white/5 transition-colors"
-            style={{ border: '1px solid #222' }}>
-            <Icon d={IC.back} size={15} style={{ color: '#888' }} />
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        height: '64px', backgroundColor: T.bg, borderBottom: `1px solid ${T.outline}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 64px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button
+            onClick={() => navigate('/seller/dashboard')}
+            style={{
+              width: '32px', height: '32px', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', border: `1px solid ${T.outline}`,
+              backgroundColor: 'transparent', cursor: 'pointer', outline: 'none',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = T.sand}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <Icon d={IC.back} size={15} style={{ color: T.espresso }} />
           </button>
-          <span className="text-[10px] font-black tracking-[0.28em] uppercase px-2 py-0.5 rounded-sm"
-            style={{ color: '#F5C518', border: '1px solid rgba(245,197,24,0.35)' }}>
+          
+          <span style={{
+            fontFamily: FONT_SERIF, fontSize: '22px', fontWeight: 400,
+            color: T.espresso, letterSpacing: '0.18em', cursor: 'pointer',
+          }}
+          onClick={() => navigate('/')}
+          >
             Snitch
           </span>
-          <span className="text-[10px] font-bold tracking-widest uppercase hidden sm:block" style={{ color: '#333' }}>
-            / Seller / Product Detail
+
+          <div style={{ width: '1px', height: '16px', backgroundColor: T.outline }} />
+
+          <span style={{
+            fontFamily: FONT_SANS, fontSize: '12px', fontWeight: 500,
+            letterSpacing: '0.05em', color: T.espresso,
+          }}>
+            Seller Dashboard
           </span>
         </div>
       </nav>
 
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-8">
-
-        {/* ══ SECTION 1 — Product Overview ════════════════════════ */}
-        <div className="flex flex-col sm:flex-row gap-10 mb-10" style={{ minHeight: '380px' }}>
-
+      {/* ══ MAIN BODY ════════════════════════════════════════════════ */}
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 64px 0' }}>
+        
+        {/* SECTION 1: Product overview */}
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '48px', marginBottom: '48px', flexWrap: 'wrap' }}>
           {/* Image mini-gallery */}
-          <div className="flex gap-3 flex-shrink-0">
+          <div style={{ display: 'flex', gap: '16px', flexShrink: 0 }}>
             {/* Thumbnails strip */}
             {images.length > 1 && (
-              <div className="flex flex-col gap-2 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: '8px',
+                maxHeight: '380px', overflowY: 'auto', scrollbarWidth: 'none',
+              }}>
                 {images.map((img, i) => (
-                  <button key={img._id} onClick={() => setActiveImg(i)}
-                    className="w-16 h-16 overflow-hidden rounded-sm flex-shrink-0 transition-all"
-                    style={{ border: `1px solid ${i === activeImg ? '#F5C518' : '#1a1a1a'}`, backgroundColor: '#0a0a0a', boxShadow: i === activeImg ? '0 0 0 1px rgba(245,197,24,0.2)' : 'none' }}>
+                  <button
+                    key={img._id || i}
+                    onClick={() => setActiveImg(i)}
+                    style={{
+                      width: '64px', height: '80px', overflow: 'hidden',
+                      flexShrink: 0, padding: 0, cursor: 'pointer',
+                      backgroundColor: T.surface, border: `1px solid ${i === activeImg ? T.caramel : T.outline}`,
+                      transition: 'border-color 0.15s',
+                    }}
+                  >
                     {!imgErr[`t${i}`] ? (
-                      <img src={img.url} alt="" className="w-full h-full object-cover"
+                      <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={() => setImgErr(p => ({ ...p, [`t${i}`]: true }))} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Icon d={IC.img} size={16} className="opacity-10" />
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon d={IC.img} size={16} style={{ color: T.faint }} />
                       </div>
                     )}
                   </button>
@@ -526,100 +849,147 @@ const SellerProductDetail = () => {
               </div>
             )}
 
-            {/* Main preview — larger */}
-            <div className="rounded-sm overflow-hidden flex-shrink-0" style={{ width: '288px', height: '380px', backgroundColor: '#0a0a0a', border: '1px solid #1a1a1a' }}>
+            {/* Main preview */}
+            <div style={{
+              width: '288px', height: '380px', backgroundColor: T.surface,
+              border: `1px solid ${T.outline}`, overflow: 'hidden',
+            }}>
               {images[activeImg] && !imgErr['m'] ? (
                 <img src={images[activeImg].url} alt={product.title}
-                  className="w-full h-full object-cover"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={() => setImgErr(p => ({ ...p, m: true }))} />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Icon d={IC.img} size={48} className="opacity-10" />
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon d={IC.img} size={36} style={{ color: T.outline }} />
                 </div>
               )}
             </div>
           </div>
 
           {/* Product Info */}
-          <div className="flex flex-col gap-3 pt-1 flex-1 min-w-0">
-            {/* Status strip */}
-            <p className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: '#F5C518' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minWidth: '280px' }}>
+            <span style={{
+              fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+              letterSpacing: '0.22em', textTransform: 'uppercase', color: T.caramel,
+            }}>
               Seller Dashboard
-            </p>
-
-            <h1 className="text-3xl font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+            </span>
+            
+            <h1 style={{
+              fontFamily: FONT_SERIF, fontSize: '38px', fontWeight: 300,
+              color: T.espresso, margin: 0, lineHeight: 1.15,
+            }}>
               {product.title}
             </h1>
 
-            <div className="w-8 h-[2px]" style={{ backgroundColor: '#F5C518' }} />
+            <div style={{ width: '48px', height: '1px', backgroundColor: T.caramel }} />
 
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-2xl font-bold" style={{ color: '#F5C518' }}>
-                ₹{Number(product.price?.amount).toLocaleString('en-IN')}
+            <p style={{
+              fontFamily: FONT_SERIF, fontSize: '28px', fontWeight: 400,
+              color: T.espresso, margin: 0, fontStyle: 'italic',
+            }}>
+              ₹{Number(product.price?.amount || 0).toLocaleString('en-IN')}
+              <span style={{ fontFamily: FONT_SANS, fontSize: '11px', fontStyle: 'normal', color: T.faint, marginLeft: '8px' }}>
+                {product.price?.currency || 'INR'}
               </span>
-              <span className="text-xs" style={{ color: '#444' }}>{product.price?.currency || 'INR'}</span>
-            </div>
+            </p>
 
-            <p className="text-sm leading-relaxed" style={{ color: '#555', lineHeight: 1.8 }}>
+            <p style={{
+              fontFamily: FONT_SANS, fontSize: '14px', color: T.walnut,
+              lineHeight: 1.8, margin: 0,
+            }}>
               {product.description}
             </p>
 
-            <div className="flex items-center gap-4 mt-1 flex-wrap">
-              <span className="text-[10px] tracking-wider" style={{ color: '#333' }}>
-                Created: {fmtDate(product.createdAt)}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '16px',
+              flexWrap: 'wrap', marginTop: '8px', paddingTop: '16px',
+              borderTop: `1px solid ${T.outline}`,
+            }}>
+              <span style={{ fontFamily: FONT_SANS, fontSize: '10px', color: T.faint, letterSpacing: '0.05em' }}>
+                CREATED: {fmtDate(product.createdAt)}
               </span>
-              <span className="text-[10px] tracking-wider" style={{ color: '#333' }}>
-                Updated: {fmtDate(product.updatedAt)}
+              <span style={{ fontFamily: FONT_SANS, fontSize: '10px', color: T.faint, letterSpacing: '0.05em' }}>
+                UPDATED: {fmtDate(product.updatedAt)}
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-sm" style={{ backgroundColor: '#111', color: '#555', border: '1px solid #1a1a1a' }}>
-                {images.length} image{images.length !== 1 ? 's' : ''}
+              <span style={{
+                fontFamily: FONT_SANS, fontSize: '9px', fontWeight: 600,
+                letterSpacing: '0.1em', padding: '2px 8px',
+                backgroundColor: T.sand, color: T.espresso,
+              }}>
+                {images.length} IMAGE{images.length !== 1 ? 'S' : ''}
               </span>
             </div>
           </div>
         </div>
 
-        {/* divider */}
-        <div className="mb-8" style={{ height: '1px', backgroundColor: '#161616' }} />
+        <div style={{ height: '1px', backgroundColor: T.outline, margin: '40px 0' }} />
 
-        {/* ══ SECTION 2 — Variants ════════════════════════════════ */}
+        {/* SECTION 2: Variants list */}
         <div>
-          {/* Section header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Icon d={IC.layers} size={16} style={{ color: '#F5C518' }} />
-              <p className="text-[11px] font-bold tracking-[0.22em] uppercase" style={{ color: '#555' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Icon d={IC.layers} size={18} style={{ color: T.caramel }} />
+              <h2 style={{
+                fontFamily: FONT_SERIF, fontSize: '24px', fontWeight: 300,
+                color: T.espresso, margin: 0,
+              }}>
                 Product Variants
-              </p>
-              <span className="text-[10px] px-2 py-0.5 rounded-sm font-semibold"
-                style={{ backgroundColor: '#111', color: '#444', border: '1px solid #1a1a1a' }}>
+              </h2>
+              <span style={{
+                fontFamily: FONT_SANS, fontSize: '11px', fontWeight: 600,
+                padding: '2px 8px', backgroundColor: T.sand, color: T.espresso,
+              }}>
                 {variants.length}
               </span>
             </div>
 
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-sm transition-opacity hover:opacity-85"
-              style={{ backgroundColor: '#F5C518', color: '#000' }}>
-              <Icon d={IC.plus} size={13} />
-              Add Variant
+              style={{
+                fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                padding: '12px 20px', backgroundColor: T.espresso, color: T.bg,
+                border: 'none', cursor: 'pointer', transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = T.walnut}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = T.espresso}
+            >
+              + Add Variant
             </button>
           </div>
 
-          {/* Variants list */}
+          {/* List or Empty State */}
           {variants.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-sm"
-              style={{ border: '2px dashed #1a1a1a', backgroundColor: '#0a0a0a' }}>
-              <Icon d={IC.tag} size={36} className="opacity-10" />
-              <p className="text-sm" style={{ color: '#444' }}>No variants yet</p>
-              <p className="text-xs" style={{ color: '#333' }}>Add variants to manage size, color, stock and more</p>
-              <button onClick={() => setShowForm(true)}
-                className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase px-4 py-2.5 rounded-sm mt-2"
-                style={{ backgroundColor: '#F5C518', color: '#000' }}>
-                <Icon d={IC.plus} size={12} /> Create First Variant
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              justifyContent: 'center', padding: '64px 32px', gap: '16px',
+              border: `2px dashed ${T.outline}`, backgroundColor: T.white,
+              textAlign: 'center',
+            }}>
+              <Icon d={IC.tag} size={36} style={{ color: T.outline }} />
+              <p style={{ fontFamily: FONT_SERIF, fontSize: '20px', margin: 0, color: T.espresso }}>No variants yet</p>
+              <p style={{ fontFamily: FONT_SANS, fontSize: '13px', color: T.walnut, margin: 0 }}>
+                Create variants to manage sizing, color options, pricing adjustments, and inventory stock levels.
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                style={{
+                  fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  padding: '12px 24px', backgroundColor: T.espresso, color: T.bg,
+                  border: 'none', cursor: 'pointer', transition: 'background-color 0.2s',
+                  marginTop: '8px',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = T.walnut}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = T.espresso}
+              >
+                Create First Variant
               </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {variants.map(v => (
                 <VariantCard
                   key={v._id}
@@ -632,9 +1002,10 @@ const SellerProductDetail = () => {
             </div>
           )}
         </div>
+
       </div>
 
-      {/* ══ Add Variant Panel ══════════════════════════════════════ */}
+      {/* ══ ADD VARIANT DRAWER ═════════════════════════════════════ */}
       {showForm && (
         <AddVariantForm
           productId={productId}
@@ -643,7 +1014,7 @@ const SellerProductDetail = () => {
         />
       )}
 
-      {/* ══ Toast ══════════════════════════════════════════════════ */}
+      {/* ══ TOAST NOTIFICATION ═════════════════════════════════════ */}
       {toast && <Toast msg={toast.msg} type={toast.type} />}
     </div>
   )
