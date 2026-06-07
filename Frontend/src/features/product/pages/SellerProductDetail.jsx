@@ -730,10 +730,6 @@ const SellerProductDetail = () => {
   if (loading) return (
     <div style={{ backgroundColor: T.bg, minHeight: '100vh', fontFamily: FONT_SANS }}>
       <FontStyle />
-      <nav style={{
-        height: '64px', backgroundColor: T.bg, borderBottom: `1px solid ${T.outline}`,
-        display: 'flex', alignItems: 'center', padding: '0 64px',
-      }} />
       <PageSkeleton />
     </div>
   )
@@ -770,47 +766,7 @@ const SellerProductDetail = () => {
     <div style={{ backgroundColor: T.bg, minHeight: '100vh', fontFamily: FONT_SANS, color: T.espresso, paddingBottom: '64px' }}>
       <FontStyle />
 
-      {/* ══ NAVBAR ══════════════════════════════════════════════════ */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 30,
-        height: '64px', backgroundColor: T.bg, borderBottom: `1px solid ${T.outline}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 64px',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button
-            onClick={() => navigate('/seller/dashboard')}
-            style={{
-              width: '32px', height: '32px', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', border: `1px solid ${T.outline}`,
-              backgroundColor: 'transparent', cursor: 'pointer', outline: 'none',
-              transition: 'background-color 0.2s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = T.sand}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            <Icon d={IC.back} size={15} style={{ color: T.espresso }} />
-          </button>
-          
-          <span style={{
-            fontFamily: FONT_SERIF, fontSize: '22px', fontWeight: 400,
-            color: T.espresso, letterSpacing: '0.18em', cursor: 'pointer',
-          }}
-          onClick={() => navigate('/')}
-          >
-            Snitch
-          </span>
 
-          <div style={{ width: '1px', height: '16px', backgroundColor: T.outline }} />
-
-          <span style={{
-            fontFamily: FONT_SANS, fontSize: '12px', fontWeight: 500,
-            letterSpacing: '0.05em', color: T.espresso,
-          }}>
-            Seller Dashboard
-          </span>
-        </div>
-      </nav>
 
       {/* ══ MAIN BODY ════════════════════════════════════════════════ */}
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 64px 0' }}>
@@ -868,12 +824,28 @@ const SellerProductDetail = () => {
 
           {/* Product Info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minWidth: '280px' }}>
-            <span style={{
-              fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
-              letterSpacing: '0.22em', textTransform: 'uppercase', color: T.caramel,
-            }}>
-              Seller Dashboard
-            </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{
+                fontFamily: FONT_SANS, fontSize: '10px', fontWeight: 600,
+                letterSpacing: '0.22em', textTransform: 'uppercase', color: T.caramel,
+              }}>
+                Seller Dashboard
+              </span>
+              <button
+                onClick={() => navigate('/seller/dashboard')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: T.espresso, fontFamily: FONT_SANS, fontSize: '12px',
+                  fontWeight: 500, transition: 'color 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = T.caramel}
+                onMouseLeave={e => e.currentTarget.style.color = T.espresso}
+              >
+                <Icon d={IC.back} size={13} style={{ color: 'currentColor' }} />
+                Back to Dashboard
+              </button>
+            </div>
             
             <h1 style={{
               fontFamily: FONT_SERIF, fontSize: '38px', fontWeight: 300,

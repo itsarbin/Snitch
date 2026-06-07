@@ -221,61 +221,8 @@ const Cart = () => {
       {/* ROOT */}
       <div style={{ background: C.bg, minHeight: '100vh', fontFamily: dmSans, color: C.espresso }}>
 
-        {/* ── NAVBAR ───────────────────────────────────────────────────── */}
-        <nav style={{
-          position:       'fixed',
-          top:             0,
-          left:            0,
-          right:           0,
-          zIndex:          50,
-          height:         '64px',
-          background:      C.bg,
-          borderBottom:   `1px solid ${C.outline}`,
-          display:        'flex',
-          alignItems:     'center',
-          justifyContent: 'space-between',
-          padding:        '0 64px',
-        }}>
-          {/* Back */}
-          <button
-            id="cart-back-btn"
-            onClick={() => navigate(-1)}
-            onMouseEnter={() => setHoverBack(true)}
-            onMouseLeave={() => setHoverBack(false)}
-            style={{
-              display:    'flex',
-              alignItems: 'center',
-              gap:        '6px',
-              background: 'none',
-              border:     'none',
-              cursor:     'pointer',
-              color:       hoverBack ? C.caramel : C.espresso,
-              fontFamily:  dmSans,
-              fontSize:   '13px',
-              fontWeight:  500,
-              transition: 'color 0.2s',
-              padding:    '4px 0',
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            Back
-          </button>
-
-          {/* Title */}
-          <span style={{ fontFamily: garamond, fontSize: '20px', fontWeight: 500, color: C.espresso, letterSpacing: '0.01em' }}>
-            Your Cart
-          </span>
-
-          {/* Brand */}
-          <span style={{ fontFamily: garamond, fontSize: '16px', fontWeight: 500, color: C.espresso, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Snitch
-          </span>
-        </nav>
-
         {/* ── MAIN CONTENT ─────────────────────────────────────────────── */}
-        <div style={{ paddingTop: '64px' }}>
+        <div style={{ paddingTop: '0' }}>
           <div style={{
             maxWidth:       '1280px',
             margin:         '0 auto',
@@ -287,6 +234,34 @@ const Cart = () => {
 
             {/* ══════════ LEFT — CART ITEMS ══════════ */}
             <div style={{ flex: '1.5', minWidth: 0 }}>
+              {/* Back button */}
+              <button
+                id="cart-back-btn"
+                onClick={() => navigate(-1)}
+                onMouseEnter={() => setHoverBack(true)}
+                onMouseLeave={() => setHoverBack(false)}
+                style={{
+                  display:    'flex',
+                  alignItems: 'center',
+                  gap:        '6px',
+                  background: 'none',
+                  border:     'none',
+                  cursor:     'pointer',
+                  color:       hoverBack ? C.caramel : C.espresso,
+                  fontFamily:  dmSans,
+                  fontSize:   '13px',
+                  fontWeight:  500,
+                  transition: 'color 0.2s',
+                  padding:    '4px 0',
+                  marginBottom: '16px',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Back to shopping
+              </button>
+
               {/* Section header */}
               <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '16px' }}>
                 <h1 style={{ fontFamily: garamond, fontSize: '36px', fontStyle: 'italic', fontWeight: 400, color: C.espresso, lineHeight: 1.1 }}>

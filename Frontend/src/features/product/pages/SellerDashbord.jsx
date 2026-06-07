@@ -375,99 +375,7 @@ const SellerDashbord = () => {
     <div style={{ backgroundColor: T.bg, minHeight: '100vh', fontFamily: "'DM Sans', sans-serif", color: T.espresso }}>
       <FontStyle />
 
-      {/* ══ HEADER ══════════════════════════════════════════════════ */}
-      <header
-        style={{
-          position: 'sticky', top: 0, zIndex: 30,
-          backgroundColor: T.bg,
-          borderBottom: `1px solid ${T.outline}`,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1440px', margin: '0 auto',
-            padding: '0 64px', height: '64px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px',
-          }}
-        >
-          {/* Left: Brand + title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
-            <span
-              style={{
-                fontFamily: "'EB Garamond', serif",
-                fontSize: '22px', fontWeight: 400,
-                letterSpacing: '0.18em',
-                color: T.espresso,
-                lineHeight: 1,
-              }}
-            >
-              Snitch
-            </span>
-            <div style={{ width: '1px', height: '20px', backgroundColor: T.sand }} />
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: '14px', fontWeight: 500,
-                color: T.espresso,
-              }}
-            >
-              Seller Dashboard
-            </span>
-          </div>
 
-          {/* Center: Search */}
-          <div style={{ position: 'relative', flex: 1, maxWidth: '280px' }}>
-            <span
-              style={{
-                position: 'absolute', left: 0, top: '50%',
-                transform: 'translateY(-50%)',
-                display: 'flex', alignItems: 'center',
-                pointerEvents: 'none',
-              }}
-            >
-              <Icon d={PATHS.search} size={14} color={T.faint} style={{ opacity: 0.7 }} />
-            </span>
-            <input
-              className="snitch-search-input"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search products…"
-              style={{
-                width: '100%',
-                background: 'transparent',
-                paddingLeft: '22px',
-                paddingBottom: '4px',
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: '13px',
-                color: T.espresso,
-                border: 'none',
-                borderBottom: `1px solid ${search ? T.caramel : T.outline}`,
-                transition: 'border-color 0.2s',
-              }}
-            />
-          </div>
-
-          {/* Right: Create Product */}
-          <button
-            className="snitch-create-btn"
-            onClick={goCreate}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              padding: '10px 20px',
-              borderRadius: 0, border: 'none',
-              backgroundColor: T.espresso,
-              color: T.bg,
-              flexShrink: 0,
-            }}
-          >
-            <Icon d={PATHS.plus} size={13} color={T.bg} />
-            Create Product
-          </button>
-        </div>
-      </header>
 
       {/* ══ MAIN ════════════════════════════════════════════════════ */}
       <main
@@ -551,8 +459,12 @@ const SellerDashbord = () => {
         {/* ── Section header ────────────────────────────────────── */}
         <div
           style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
             marginBottom: '16px',
+            gap: '24px',
+            flexWrap: 'wrap',
           }}
         >
           {/* Left: eyebrow + title */}
@@ -583,27 +495,81 @@ const SellerDashbord = () => {
             </h2>
           </div>
 
-          {/* Right: filter chips */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {tabs.map(t => (
-              <button
-                key={t}
-                className="snitch-chip-btn"
-                onClick={() => setFilter(t)}
+          {/* Right: Search + Create Product + filter chips */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            {/* Search */}
+            <div style={{ position: 'relative', width: '220px' }}>
+              <span
                 style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '9px', fontWeight: 500,
-                  letterSpacing: '0.14em', textTransform: 'uppercase',
-                  padding: '6px 12px',
-                  borderRadius: 0,
-                  backgroundColor: filter === t ? T.espresso : 'transparent',
-                  color:           filter === t ? T.bg       : T.faint,
-                  border:          filter === t ? `1px solid ${T.espresso}` : `1px solid ${T.outline}`,
+                  position: 'absolute', left: 0, top: '50%',
+                  transform: 'translateY(-50%)',
+                  display: 'flex', alignItems: 'center',
+                  pointerEvents: 'none',
                 }}
               >
-                {t}
-              </button>
-            ))}
+                <Icon d={PATHS.search} size={14} color={T.faint} style={{ opacity: 0.7 }} />
+              </span>
+              <input
+                className="snitch-search-input"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search products…"
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  paddingLeft: '22px',
+                  paddingBottom: '4px',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '13px',
+                  color: T.espresso,
+                  border: 'none',
+                  borderBottom: `1px solid ${search ? T.caramel : T.outline}`,
+                  transition: 'border-color 0.2s',
+                }}
+              />
+            </div>
+
+            {/* Filter chips */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {tabs.map(t => (
+                <button
+                  key={t}
+                  className="snitch-chip-btn"
+                  onClick={() => setFilter(t)}
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '9px', fontWeight: 500,
+                    letterSpacing: '0.14em', textTransform: 'uppercase',
+                    padding: '6px 12px',
+                    borderRadius: 0,
+                    backgroundColor: filter === t ? T.espresso : 'transparent',
+                    color:           filter === t ? T.bg       : T.faint,
+                    border:          filter === t ? `1px solid ${T.espresso}` : `1px solid ${T.outline}`,
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {/* Create Product Button */}
+            <button
+              className="snitch-create-btn"
+              onClick={goCreate}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                padding: '8px 16px',
+                borderRadius: 0, border: 'none',
+                backgroundColor: T.espresso,
+                color: T.bg,
+              }}
+            >
+              <Icon d={PATHS.plus} size={13} color={T.bg} />
+              Create Product
+            </button>
           </div>
         </div>
 

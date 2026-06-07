@@ -242,66 +242,46 @@ const ProductDetail = () => {
   return (
     <div style={{ backgroundColor: C.bg, minHeight: '100vh', fontFamily: FONT_SANS, color: C.espresso }}>
 
-      {/* ══ NAVBAR ══════════════════════════════════════════════════ */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 30,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 64px', height: '56px',
-        backgroundColor: C.bg, borderBottom: `1px solid ${C.outline}`,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* ══ CONTENT ═════════════════════════════════════════════════ */}
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 64px' }}>
+
+        {/* Breadcrumb */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <p style={{
+            fontFamily: FONT_SANS, fontSize: '10px', letterSpacing: '0.14em',
+            color: C.faint, margin: 0, textTransform: 'uppercase',
+          }}>
+            <span
+              onClick={() => navigate('/')}
+              style={{ cursor: 'pointer', transition: 'color 0.15s' }}
+              onMouseEnter={e => e.target.style.color = C.caramel}
+              onMouseLeave={e => e.target.style.color = C.faint}
+            >Home</span>
+            {' / '}
+            <span
+              onClick={() => navigate('/')}
+              style={{ cursor: 'pointer', transition: 'color 0.15s' }}
+              onMouseEnter={e => e.target.style.color = C.caramel}
+              onMouseLeave={e => e.target.style.color = C.faint}
+            >Products</span>
+            {' / '}
+            <span style={{ color: C.walnut }}>{product.title}</span>
+          </p>
           <button
             onClick={() => navigate(-1)}
             onMouseEnter={() => setBackHov(true)}
             onMouseLeave={() => setBackHov(false)}
             style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: '32px', height: '32px',
-              border: `1px solid ${C.espresso}`,
-              backgroundColor: backHov ? C.sand : 'transparent',
-              cursor: 'pointer', transition: 'background-color 0.18s',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: backHov ? C.caramel : C.espresso,
+              fontFamily: FONT_SANS, fontSize: '12px', fontWeight: 500,
+              transition: 'color 0.15s',
             }}>
-            <Icon d={ICONS.back} size={15} style={{ color: C.espresso }} />
+            <Icon d={ICONS.back} size={13} style={{ color: 'currentColor' }} />
+            Back
           </button>
-          <span style={{
-            fontFamily: FONT_SERIF, fontSize: '22px', fontWeight: 400,
-            color: C.espresso, letterSpacing: '0.06em',
-          }}>
-            Snitch
-          </span>
         </div>
-        <button style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: C.espresso, display: 'flex', alignItems: 'center',
-        }}>
-          <Icon d={ICONS.cart} size={20} style={{ color: C.espresso }} />
-        </button>
-      </nav>
-
-      {/* ══ CONTENT ═════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 64px' }}>
-
-        {/* Breadcrumb */}
-        <p style={{
-          fontFamily: FONT_SANS, fontSize: '10px', letterSpacing: '0.14em',
-          color: C.faint, marginBottom: '32px', textTransform: 'uppercase',
-        }}>
-          <span
-            onClick={() => navigate('/')}
-            style={{ cursor: 'pointer', transition: 'color 0.15s' }}
-            onMouseEnter={e => e.target.style.color = C.caramel}
-            onMouseLeave={e => e.target.style.color = C.faint}
-          >Home</span>
-          {' / '}
-          <span
-            onClick={() => navigate('/')}
-            style={{ cursor: 'pointer', transition: 'color 0.15s' }}
-            onMouseEnter={e => e.target.style.color = C.caramel}
-            onMouseLeave={e => e.target.style.color = C.faint}
-          >Products</span>
-          {' / '}
-          <span style={{ color: C.walnut }}>{product.title}</span>
-        </p>
 
         {/* ── Two-column layout ── */}
         <div style={{ display: 'flex', flexDirection: 'row', gap: '64px', alignItems: 'flex-start' }}>

@@ -304,81 +304,7 @@ const Home = () => {
         }
       `}</style>
 
-      {/* ══ NAVBAR ════════════════════════════════════════════════════ */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(253,249,243,0.94)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${C.sand}`,
-      }}>
-        <div style={{
-          maxWidth: '1440px', margin: '0 auto',
-          padding: '0 64px', height: '70px',
-          display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
 
-          {/* Logo */}
-          <span style={{
-            fontFamily: C.serif,
-            fontSize: '26px', fontWeight: 400,
-            letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: C.espresso,
-          }}>
-            Snitch
-          </span>
-
-          {/* Nav links */}
-          <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
-            {['Collections', 'New Arrivals', 'Editorial', 'About'].map((l) => (
-              <a key={l} href="#" className="snitch-nav-link">{l}</a>
-            ))}
-          </div>
-
-          {/* Search + Bag */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Icon
-                d={IC.search} size={14}
-                style={{
-                  position: 'absolute', left: 0,
-                  color: searchFocused ? C.caramel : C.faint,
-                  transition: 'color 0.2s',
-                  pointerEvents: 'none',
-                }}
-              />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                placeholder="Search…"
-                style={{
-                  fontFamily: C.sans, fontSize: '12px', letterSpacing: '0.05em',
-                  color: C.espresso,
-                  background: 'transparent', border: 'none', outline: 'none',
-                  borderBottom: `1px solid ${searchFocused || search ? C.caramel : C.outline}`,
-                  paddingLeft: '22px', paddingBottom: '3px',
-                  width: '170px',
-                  transition: 'border-color 0.25s',
-                }}
-              />
-            </div>
-            <button
-              style={{
-                background: 'none', border: 'none', padding: '4px',
-                color: C.espresso, cursor: 'pointer', opacity: 0.7,
-                transition: 'opacity 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
-            >
-              <Icon d={IC.bag} size={20} />
-            </button>
-          </div>
-        </div>
-      </nav>
 
       {/* ══ HERO ══════════════════════════════════════════════════════ */}
       <section style={{
@@ -547,14 +473,44 @@ const Home = () => {
             </h2>
           </div>
 
-          {!loading && (
-            <p style={{
-              fontFamily: C.sans, fontSize: '12px',
-              color: C.faint, letterSpacing: '0.08em',
-            }}>
-              {filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}
-            </p>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Icon
+                d={IC.search} size={14}
+                style={{
+                  position: 'absolute', left: 0,
+                  color: searchFocused ? C.caramel : C.faint,
+                  transition: 'color 0.2s',
+                  pointerEvents: 'none',
+                }}
+              />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Search products…"
+                style={{
+                  fontFamily: C.sans, fontSize: '12px', letterSpacing: '0.05em',
+                  color: C.espresso,
+                  background: 'transparent', border: 'none', outline: 'none',
+                  borderBottom: `1px solid ${searchFocused || search ? C.caramel : C.outline}`,
+                  paddingLeft: '22px', paddingBottom: '3px',
+                  width: '170px',
+                  transition: 'border-color 0.25s',
+                }}
+              />
+            </div>
+
+            {!loading && (
+              <p style={{
+                fontFamily: C.sans, fontSize: '12px',
+                color: C.faint, letterSpacing: '0.08em',
+              }}>
+                {filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Filter chips */}

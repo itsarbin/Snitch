@@ -237,7 +237,7 @@ const CreateProduct = () => {
       {/* ── Root ── */}
       <div
         style={{
-          height: '100vh',
+          height: 'calc(100vh - 70px)',
           width: '100%',
           overflow: 'hidden',
           display: 'flex',
@@ -246,76 +246,6 @@ const CreateProduct = () => {
           fontFamily: F.sans,
         }}
       >
-        {/* ══ NAVBAR ══ */}
-        <nav
-          style={{
-            height: '56px',
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 48px',
-            borderBottom: `1px solid ${C.outline}`,
-            background: C.bg,
-          }}
-        >
-          {/* Left: Brand */}
-          <span
-            style={{
-              fontFamily: F.serif,
-              fontSize: '20px',
-              fontWeight: 400,
-              color: C.espresso,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              userSelect: 'none',
-            }}
-          >
-            Snitch
-          </span>
-
-          {/* Center: Breadcrumb */}
-          <span
-            style={{
-              fontFamily: F.sans,
-              fontSize: '10px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-            }}
-          >
-            <span style={{ color: C.caramel }}>New Listing</span>
-            <span style={{ color: C.espresso }}>{' / Create Product'}</span>
-          </span>
-
-          {/* Right: Close */}
-          <button
-            id="close-create-product"
-            onClick={() => navigate(-1)}
-            onMouseEnter={() => onMouseEnter('close')}
-            onMouseLeave={() => onMouseLeave('close')}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: hov['close'] ? C.walnut : C.espresso,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '4px',
-              transition: 'color 0.2s',
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M2 2L14 14M14 2L2 14"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-        </nav>
-
         {/* ══ BODY ══ */}
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
@@ -342,6 +272,34 @@ const CreateProduct = () => {
                 minHeight: '100%',
               }}
             >
+              {/* Breadcrumb + Back link */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <span
+                  style={{
+                    fontFamily: F.sans,
+                    fontSize: '10px',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  <span style={{ color: C.caramel }}>New Listing</span>
+                  <span style={{ color: C.espresso }}>{' / Create Product'}</span>
+                </span>
+                <span
+                  onClick={() => navigate(-1)}
+                  style={{
+                    fontFamily: F.sans,
+                    fontSize: '11px',
+                    letterSpacing: '0.05em',
+                    color: C.espresso,
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  Back
+                </span>
+              </div>
+
               {/* Eyebrow */}
               <p
                 style={{
