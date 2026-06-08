@@ -1,4 +1,4 @@
-import {addToCart, getCart} from '../service/cart.api'
+import {addToCart, getCart, updateCartQuantity} from '../service/cart.api'
 import {setItems,addItem} from '../state/cart.slice'
 import {useDispatch} from 'react-redux'
 
@@ -25,5 +25,16 @@ export const useCart = () => {
             throw error;
         }
     }
-    return {handleAddToCart, handleGetCart}
+
+    const handleUpdateCartQuantity = async (productId, variantId) => {
+        try {
+            const data = await updateCartQuantity(productId, variantId);
+            return data;
+        } catch (error) {
+            console.error('Error updating cart quantity:', error);
+            throw error;
+        }
+    }
+
+    return {handleAddToCart, handleGetCart, handleUpdateCartQuantity}
 }

@@ -637,7 +637,7 @@ const SellerDashbord = () => {
               color: T.faint,
             }}
           >
-            © {new Date().getFullYear()} Snitch Menswear. All rights reserved.
+            © {new Date().getFullYear()} Snitch. All rights reserved.
           </span>
         </div>
 

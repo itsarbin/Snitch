@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router'
 import axios from 'axios'
 import { setItems } from '../state/cart.slice'
 
+
 /* ─── Design tokens ─────────────────────────────────────────────────────────── */
 const C = {
   bg:       '#fdf9f3',
@@ -124,7 +125,7 @@ const ReturnIcon = () => (
    CART PAGE
 ═══════════════════════════════════════════════════════════════════════════════ */
 const Cart = () => {
-  const { handleGetCart } = useCart()
+  const { handleGetCart, handleUpdateCartQuantity } = useCart()
   const dispatch          = useDispatch()
   const navigate          = useNavigate()
   const cartItems         = useSelector((state) => state.cart.items)
@@ -158,7 +159,8 @@ const Cart = () => {
     setUpdating(prev => ({ ...prev, [key]: true }))
     try {
       const prodId = item.productId?._id ?? item.productId
-      await apiUpdateQty(prodId, item.variantId, newQty)
+      
+      await handleUpdateCartQuantity(prodId, item.variantId)
       await handleGetCart()          // re-sync Redux state from server
     } catch (err) {
       console.error('Failed to update qty:', err)

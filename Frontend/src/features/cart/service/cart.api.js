@@ -24,3 +24,13 @@ export const getCart = async () => {
         throw error;    
     }
 }
+
+export const updateCartQuantity = async (productId, variantId) => {
+    try {
+        const response = await cartApi.patch(`/update/${productId}/${variantId}`, { productId, variantId });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating cart quantity:', error);
+        throw error;
+    }
+}

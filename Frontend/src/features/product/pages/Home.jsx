@@ -360,7 +360,7 @@ const Home = () => {
             maxWidth: '420px', marginBottom: '44px',
             letterSpacing: '0.02em',
           }}>
-            Curated menswear for those who move through the world with quiet confidence and uncommon style.
+            Curated apparel for those who move through the world with quiet confidence and uncommon style.
           </p>
 
           {/* CTAs */}
@@ -585,7 +585,7 @@ const Home = () => {
               lineHeight: 1.85, color: C.walnut,
               maxWidth: '240px',
             }}>
-              Premium menswear crafted for the modern gentleman. Quiet luxury, extraordinary fit.
+              Premium apparel crafted for the modern individual. Quiet luxury, extraordinary fit.
             </p>
           </div>
 
