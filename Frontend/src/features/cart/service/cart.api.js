@@ -25,12 +25,32 @@ export const getCart = async () => {
     }
 }
 
-export const updateCartQuantity = async (productId, variantId) => {
+export const incrementCartQuantity = async (productId, variantId) => {
     try {
-        const response = await cartApi.patch(`/update/${productId}/${variantId}`, { productId, variantId });
+        const response = await cartApi.patch(`/increment/${productId}/${variantId}`, { productId, variantId });
         return response.data;
     } catch (error) {
         console.error('Error updating cart quantity:', error);
+        throw error;
+    }
+}
+
+export const decrementCartQuantity = async (productId, variantId) => {
+    try {
+        const response = await cartApi.patch(`/decrement/${productId}/${variantId}`, { productId, variantId });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating cart quantity:', error);
+        throw error;
+    }
+}
+
+export const removeItemFromCart = async (productId, variantId) => {
+    try {
+        const response = await cartApi.delete(`/remove/${productId}/${variantId}`, {productId, variantId});
+        return response.data;
+    } catch (error) {
+        console.error('Error removing item from cart:', error);
         throw error;
     }
 }

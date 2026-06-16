@@ -1,36 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '../hook/useCart'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
-import axios from 'axios'
-import { setItems } from '../state/cart.slice'
 
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────── */
 const C = {
-  bg:       '#fdf9f3',
+  bg: '#fdf9f3',
   espresso: '#3b1f0c',
-  walnut:   '#7b4a2d',
-  caramel:  '#c17a3f',
-  sand:     '#e8d5b7',
-  outline:  '#d4c3ba',
-  faint:    '#82746d',
-  cream:    '#fdf9f3',
-  surface:  '#f1ede7',
+  walnut: '#7b4a2d',
+  caramel: '#c17a3f',
+  sand: '#e8d5b7',
+  outline: '#d4c3ba',
+  faint: '#82746d',
+  cream: '#fdf9f3',
+  surface: '#f1ede7',
 }
 
-const garamond  = "'EB Garamond', Georgia, serif"
-const dmSans    = "'DM Sans', system-ui, sans-serif"
+const garamond = "'EB Garamond', Georgia, serif"
+const dmSans = "'DM Sans', system-ui, sans-serif"
 
-/* ─── Tiny cart API helpers (update-qty / remove) ────────────────────────────
-   useCart hook only exposes getCart & addToCart, so we call the API directly.  */
-const cartApi = axios.create({ baseURL: '/api/cart', withCredentials: true })
-
-const apiUpdateQty = (productId, variantId, quantity) =>
-  cartApi.patch(`/update`, { productId, variantId, quantity }).then(r => r.data)
-
-const apiRemoveItem = (productId, variantId) =>
-  cartApi.delete(`/remove`, { data: { productId, variantId } }).then(r => r.data)
 
 /* ─── Helpers ────────────────────────────────────────────────────────────────── */
 const cap = (s) => s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : ''
@@ -41,7 +30,15 @@ const formatPrice = (n) =>
 const getVariantObj = (item) => {
   const product = item?.productId ?? item?.product
   if (!product || !item?.variantId) return null
-  return product.variants?.find(v => v._id === item.variantId || v.id === item.variantId) || null
+  const v = product.variants
+  if (!v) return null
+  // After aggregation, variants is a single object (not an array)
+  if (Array.isArray(v)) {
+    return v.find(variant => variant._id === item.variantId || variant.id === item.variantId) || null
+  }
+  // Single variant object — check if it matches
+  if (v._id === item.variantId || v.id === item.variantId) return v
+  return null
 }
 
 const getVariantLabel = (item) => {
@@ -54,9 +51,9 @@ const getVariantLabel = (item) => {
       parts.push(`${cap(k)}: ${cap(v)}`)
     })
   }
-  if (item.size)  parts.push(`Size: ${cap(item.size)}`)
+  if (item.size) parts.push(`Size: ${cap(item.size)}`)
   if (item.color) parts.push(`Color: ${cap(item.color)}`)
-  if (item.variant?.size)  parts.push(`Size: ${cap(item.variant.size)}`)
+  if (item.variant?.size) parts.push(`Size: ${cap(item.variant.size)}`)
   if (item.variant?.color) parts.push(`Color: ${cap(item.variant.color)}`)
   return [...new Set(parts)].join('  ·  ')
 }
@@ -103,21 +100,21 @@ const getItemName = (item) => {
 /* ─── Trust badge SVGs ───────────────────────────────────────────────────────── */
 const ShieldIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.caramel} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   </svg>
 )
 const TruckIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.caramel} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="1" y="3" width="15" height="13" rx="1"/>
-    <path d="M16 8h4l3 5v5h-7V8z"/>
-    <circle cx="5.5" cy="18.5" r="2.5"/>
-    <circle cx="18.5" cy="18.5" r="2.5"/>
+    <rect x="1" y="3" width="15" height="13" rx="1" />
+    <path d="M16 8h4l3 5v5h-7V8z" />
+    <circle cx="5.5" cy="18.5" r="2.5" />
+    <circle cx="18.5" cy="18.5" r="2.5" />
   </svg>
 )
 const ReturnIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.caramel} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="1 4 1 10 7 10"/>
-    <path d="M3.51 15a9 9 0 1 0 .49-4.36"/>
+    <polyline points="1 4 1 10 7 10" />
+    <path d="M3.51 15a9 9 0 1 0 .49-4.36" />
   </svg>
 )
 
@@ -125,15 +122,15 @@ const ReturnIcon = () => (
    CART PAGE
 ═══════════════════════════════════════════════════════════════════════════════ */
 const Cart = () => {
-  const { handleGetCart, handleUpdateCartQuantity } = useCart()
-  const dispatch          = useDispatch()
-  const navigate          = useNavigate()
-  const cartItems         = useSelector((state) => state.cart.items)
+  const { handleGetCart, handleIncrementCartQuantity, handleDecrementCartQuantity, handleRemoveItemFromCart } = useCart()
+  const navigate = useNavigate()
+  const cartItems = useSelector((state) => state.cart.items)
+  // console.log('Cart items from Redux:', cartItems)  // Debug log
 
-  const [loading,   setLoading]   = useState(true)
-  const [updating,  setUpdating]  = useState({})   // { [key]: true } per item
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState({})   // { [key]: true } per item
   const [hoverBack, setHoverBack] = useState(false)
-  const [hoverChk,  setHoverChk]  = useState(false)
+  const [hoverChk, setHoverChk] = useState(false)
   const [hoverCont, setHoverCont] = useState(false)
 
   /* fetch on mount */
@@ -141,6 +138,7 @@ const Cart = () => {
     const fetchCart = async () => {
       try {
         await handleGetCart()
+
       } catch (_) {
         /* handled in hook */
       } finally {
@@ -151,17 +149,33 @@ const Cart = () => {
   }, [])
 
   /* ── quantity update ──────────────────────────────────────────────────── */
-  const handleQtyChange = async (item, delta) => {
-    const key       = item._id ?? item.variantId ?? item.productId
-    const newQty    = (item.quantity ?? 1) + delta
-    if (newQty < 1) return
+  const handleIncrementChange = async (item, delta) => {
+    const key = item._id ?? item.variantId ?? item.productId
+
 
     setUpdating(prev => ({ ...prev, [key]: true }))
     try {
       const prodId = item.productId?._id ?? item.productId
-      
-      await handleUpdateCartQuantity(prodId, item.variantId)
-      await handleGetCart()          // re-sync Redux state from server
+
+      await handleIncrementCartQuantity(prodId, item.variantId)
+      // re-sync Redux state from server
+    } catch (err) {
+      console.error('Failed to update qty:', err)
+    } finally {
+      setUpdating(prev => ({ ...prev, [key]: false }))
+    }
+  }
+
+  const handleDecrementChange = async (item, delta) => {
+    const key = item._id ?? item.variantId ?? item.productId
+
+
+    setUpdating(prev => ({ ...prev, [key]: true }))
+    try {
+      const prodId = item.productId?._id ?? item.productId
+
+      await handleDecrementCartQuantity(prodId, item.variantId)
+      // re-sync Redux state from server
     } catch (err) {
       console.error('Failed to update qty:', err)
     } finally {
@@ -171,32 +185,27 @@ const Cart = () => {
 
   /* ── remove item ─────────────────────────────────────────────────────── */
   const handleRemove = async (item) => {
+    console.log('Removing item:', item)  // Debug log
     const key = item._id ?? item.variantId ?? item.productId
     setUpdating(prev => ({ ...prev, [key]: true }))
     try {
       const prodId = item.productId?._id ?? item.productId
-      await apiRemoveItem(prodId, item.variantId)
-      // optimistic UI: filter locally then re-sync
-      dispatch(setItems(cartItems.filter(ci => ci !== item)))
-      await handleGetCart()
+      await handleRemoveItemFromCart(prodId, item.variantId)
+    
     } catch (err) {
       console.error('Failed to remove item:', err)
-      await handleGetCart()
+      
     } finally {
       setUpdating(prev => ({ ...prev, [key]: false }))
     }
   }
 
   /* ── order totals ─────────────────────────────────────────────────────── */
-  const subtotal = cartItems.reduce((acc, item) => {
-    const price = getItemPrice(item) ?? 0
-    const qty   = item.quantity ?? 1
-    return acc + price * qty
-  }, 0)
+  const subtotal = useSelector((state) => state.cart.totalPrice) || 0
 
-  const tax      = Math.round(subtotal * 0.05)
+  const tax = Math.round(subtotal * 0.05)
   const shipping = subtotal > 0 ? 0 : 0          // free shipping
-  const total    = subtotal + tax + shipping
+  const total = subtotal + tax + shipping
 
   /* ════════════════════════════════ RENDER ══════════════════════════════ */
   return (
@@ -226,12 +235,12 @@ const Cart = () => {
         {/* ── MAIN CONTENT ─────────────────────────────────────────────── */}
         <div style={{ paddingTop: '0' }}>
           <div style={{
-            maxWidth:       '1280px',
-            margin:         '0 auto',
-            padding:        '48px 64px',
-            display:        'flex',
-            gap:            '48px',
-            alignItems:     'flex-start',
+            maxWidth: '1280px',
+            margin: '0 auto',
+            padding: '48px 64px',
+            display: 'flex',
+            gap: '48px',
+            alignItems: 'flex-start',
           }}>
 
             {/* ══════════ LEFT — CART ITEMS ══════════ */}
@@ -243,23 +252,23 @@ const Cart = () => {
                 onMouseEnter={() => setHoverBack(true)}
                 onMouseLeave={() => setHoverBack(false)}
                 style={{
-                  display:    'flex',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap:        '6px',
+                  gap: '6px',
                   background: 'none',
-                  border:     'none',
-                  cursor:     'pointer',
-                  color:       hoverBack ? C.caramel : C.espresso,
-                  fontFamily:  dmSans,
-                  fontSize:   '13px',
-                  fontWeight:  500,
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: hoverBack ? C.caramel : C.espresso,
+                  fontFamily: dmSans,
+                  fontSize: '13px',
+                  fontWeight: 500,
                   transition: 'color 0.2s',
-                  padding:    '4px 0',
+                  padding: '4px 0',
                   marginBottom: '16px',
                 }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6"/>
+                  <polyline points="15 18 9 12 15 6" />
                 </svg>
                 Back to shopping
               </button>
@@ -302,9 +311,9 @@ const Cart = () => {
                   {/* Bag icon */}
                   <div style={{ marginBottom: '24px', opacity: 0.25 }}>
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke={C.espresso} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                      <line x1="3" y1="6" x2="21" y2="6"/>
-                      <path d="M16 10a4 4 0 0 1-8 0"/>
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
                   </div>
                   <p style={{ fontFamily: garamond, fontSize: '28px', fontStyle: 'italic', color: C.espresso, marginBottom: '10px' }}>
@@ -317,16 +326,16 @@ const Cart = () => {
                     id="cart-start-shopping-btn"
                     onClick={() => navigate('/')}
                     style={{
-                      background:  C.espresso,
-                      color:       C.cream,
-                      border:      'none',
-                      fontFamily:  dmSans,
-                      fontSize:   '11px',
-                      fontWeight:  600,
+                      background: C.espresso,
+                      color: C.cream,
+                      border: 'none',
+                      fontFamily: dmSans,
+                      fontSize: '11px',
+                      fontWeight: 600,
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
-                      padding:    '14px 36px',
-                      cursor:     'pointer',
+                      padding: '14px 36px',
+                      cursor: 'pointer',
                       transition: 'background 0.2s',
                     }}
                     onMouseEnter={e => e.currentTarget.style.background = C.walnut}
@@ -341,12 +350,12 @@ const Cart = () => {
               {!loading && cartItems.length > 0 && (
                 <div>
                   {cartItems.map((item, idx) => {
-                    const key      = item._id ?? item.variantId ?? item.productId ?? idx
-                    const name     = getItemName(item)
-                    const price    = getItemPrice(item)
-                    const image    = getItemImage(item)
-                    const variant  = getVariantLabel(item)
-                    const qty      = item.quantity ?? 1
+                    const key = item._id ?? item.variantId ?? item.productId ?? idx
+                    const name = getItemName(item)
+                    const price = getItemPrice(item)
+                    const image = getItemImage(item)
+                    const variant = getVariantLabel(item)
+                    const qty = item.quantity ?? 1
                     const isUpdating = updating[key]
 
                     return (
@@ -354,13 +363,13 @@ const Cart = () => {
                         key={key}
                         className="snitch-cart-item snitch-item-row"
                         style={{
-                          display:       'flex',
-                          gap:           '16px',
-                          padding:       '20px 0',
-                          borderBottom:  `1px solid ${C.outline}`,
+                          display: 'flex',
+                          gap: '16px',
+                          padding: '20px 0',
+                          borderBottom: `1px solid ${C.outline}`,
                           animationDelay: `${idx * 0.07}s`,
-                          opacity:        isUpdating ? 0.55 : 1,
-                          transition:    'opacity 0.25s',
+                          opacity: isUpdating ? 0.55 : 1,
+                          transition: 'opacity 0.25s',
                         }}
                       >
                         {/* Product image */}
@@ -375,9 +384,9 @@ const Cart = () => {
                           ) : (
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.outline} strokeWidth="1.4">
-                                <rect x="3" y="3" width="18" height="18" rx="1"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21 15 16 10 5 21"/>
+                                <rect x="3" y="3" width="18" height="18" rx="1" />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                <polyline points="21 15 16 10 5 21" />
                               </svg>
                             </div>
                           )}
@@ -404,19 +413,19 @@ const Cart = () => {
                               <button
                                 id={`cart-qty-minus-${key}`}
                                 className="snitch-btn-stepper"
-                                onClick={() => handleQtyChange(item, -1)}
+                                onClick={() => handleDecrementChange(item, -1)}
                                 disabled={isUpdating || qty <= 1}
                                 style={{
-                                  width:      '28px',
-                                  height:     '28px',
+                                  width: '28px',
+                                  height: '28px',
                                   background: 'none',
-                                  border:     'none',
-                                  cursor:     qty <= 1 ? 'not-allowed' : 'pointer',
-                                  display:    'flex',
+                                  border: 'none',
+                                  cursor: isUpdating || qty <= 1 ? 'not-allowed' : 'pointer',
+                                  display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  color:      qty <= 1 ? C.outline : C.espresso,
-                                  fontSize:  '16px',
+                                  color: isUpdating || qty <= 1 ? C.outline : C.espresso,
+                                  fontSize: '16px',
                                   fontFamily: dmSans,
                                   transition: 'background 0.15s, color 0.15s',
                                 }}
@@ -424,36 +433,36 @@ const Cart = () => {
                                 −
                               </button>
                               <span style={{
-                                width:      '28px',
-                                height:     '28px',
-                                display:    'flex',
+                                width: '28px',
+                                height: '28px',
+                                display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontFamily: dmSans,
-                                fontSize:  '12px',
+                                fontSize: '12px',
                                 fontWeight: 500,
-                                color:      C.espresso,
+                                color: C.espresso,
                                 borderLeft: `1px solid ${C.espresso}`,
-                                borderRight:`1px solid ${C.espresso}`,
+                                borderRight: `1px solid ${C.espresso}`,
                               }}>
                                 {qty}
                               </span>
                               <button
                                 id={`cart-qty-plus-${key}`}
                                 className="snitch-btn-stepper"
-                                onClick={() => handleQtyChange(item, 1)}
+                                onClick={() => handleIncrementChange(item, 1)}
                                 disabled={isUpdating}
                                 style={{
-                                  width:      '28px',
-                                  height:     '28px',
+                                  width: '28px',
+                                  height: '28px',
                                   background: 'none',
-                                  border:     'none',
-                                  cursor:     isUpdating ? 'not-allowed' : 'pointer',
-                                  display:    'flex',
+                                  border: 'none',
+                                  cursor: isUpdating ? 'not-allowed' : 'pointer',
+                                  display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  color:      C.espresso,
-                                  fontSize:  '16px',
+                                  color: C.espresso,
+                                  fontSize: '16px',
                                   fontFamily: dmSans,
                                   transition: 'background 0.15s, color 0.15s',
                                 }}
@@ -469,14 +478,14 @@ const Cart = () => {
                                 className="snitch-remove"
                                 onClick={() => !isUpdating && handleRemove(item)}
                                 style={{
-                                  fontFamily:    dmSans,
-                                  fontSize:     '10px',
-                                  fontWeight:    400,
-                                  color:         C.walnut,
-                                  textDecoration:'underline',
-                                  cursor:        isUpdating ? 'not-allowed' : 'pointer',
+                                  fontFamily: dmSans,
+                                  fontSize: '10px',
+                                  fontWeight: 400,
+                                  color: C.walnut,
+                                  textDecoration: 'underline',
+                                  cursor: isUpdating ? 'not-allowed' : 'pointer',
                                   letterSpacing: '0.02em',
-                                  transition:   'color 0.2s',
+                                  transition: 'color 0.2s',
                                 }}
                               >
                                 Remove
@@ -500,13 +509,13 @@ const Cart = () => {
 
             {/* ══════════ RIGHT — ORDER SUMMARY ══════════ */}
             <div style={{
-              width:      '360px',
-              flexShrink:  0,
-              position:   'sticky',
-              top:        '80px',
-              background:  C.sand,
-              padding:    '32px',
-              alignSelf:  'flex-start',
+              width: '360px',
+              flexShrink: 0,
+              position: 'sticky',
+              top: '80px',
+              background: C.sand,
+              padding: '32px',
+              alignSelf: 'flex-start',
             }}>
               {/* Heading */}
               <p style={{ fontFamily: garamond, fontSize: '22px', fontWeight: 500, color: C.espresso, marginBottom: '24px', letterSpacing: '0.01em' }}>
@@ -558,20 +567,20 @@ const Cart = () => {
                 onMouseEnter={() => setHoverChk(true)}
                 onMouseLeave={() => setHoverChk(false)}
                 style={{
-                  width:         '100%',
-                  background:     hoverChk && cartItems.length > 0 ? C.walnut : C.espresso,
-                  color:          C.cream,
-                  border:        'none',
-                  fontFamily:     dmSans,
-                  fontSize:      '11px',
-                  fontWeight:     600,
+                  width: '100%',
+                  background: hoverChk && cartItems.length > 0 ? C.walnut : C.espresso,
+                  color: C.cream,
+                  border: 'none',
+                  fontFamily: dmSans,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  padding:       '14px',
-                  cursor:         cartItems.length === 0 ? 'not-allowed' : 'pointer',
-                  marginTop:     '20px',
-                  opacity:        cartItems.length === 0 ? 0.5 : 1,
-                  transition:    'background 0.25s, opacity 0.2s',
+                  padding: '14px',
+                  cursor: cartItems.length === 0 ? 'not-allowed' : 'pointer',
+                  marginTop: '20px',
+                  opacity: cartItems.length === 0 ? 0.5 : 1,
+                  transition: 'background 0.25s, opacity 0.2s',
                 }}
               >
                 Proceed to Checkout
@@ -585,13 +594,13 @@ const Cart = () => {
                   onMouseLeave={() => setHoverCont(false)}
                   onClick={() => navigate('/')}
                   style={{
-                    fontFamily:    dmSans,
-                    fontSize:     '12px',
-                    color:         hoverCont ? C.espresso : C.walnut,
-                    textDecoration:'underline',
-                    cursor:       'pointer',
-                    fontWeight:    400,
-                    transition:   'color 0.2s',
+                    fontFamily: dmSans,
+                    fontSize: '12px',
+                    color: hoverCont ? C.espresso : C.walnut,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontWeight: 400,
+                    transition: 'color 0.2s',
                   }}
                 >
                   Continue Shopping
@@ -600,12 +609,12 @@ const Cart = () => {
 
               {/* Trust badges */}
               <div style={{
-                display:       'flex',
-                gap:           '16px',
-                marginTop:     '24px',
-                paddingTop:    '16px',
-                borderTop:     `1px solid ${C.outline}`,
-                justifyContent:'space-around',
+                display: 'flex',
+                gap: '16px',
+                marginTop: '24px',
+                paddingTop: '16px',
+                borderTop: `1px solid ${C.outline}`,
+                justifyContent: 'space-around',
               }}>
                 {[
                   { icon: <ShieldIcon />, label: 'Secure Pay' },

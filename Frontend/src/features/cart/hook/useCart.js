@@ -1,5 +1,5 @@
-import {addToCart, getCart, updateCartQuantity} from '../service/cart.api'
-import {setItems,addItem} from '../state/cart.slice'
+import {addToCart, getCart, incrementCartQuantity, decrementCartQuantity, removeItemFromCart} from '../service/cart.api'
+import {setCart,addItem, incrementItemQuantity, decrementItemQuantity, removeItem} from '../state/cart.slice'
 import {useDispatch} from 'react-redux'
 
 export const useCart = () => {
@@ -18,17 +18,19 @@ export const useCart = () => {
     const handleGetCart = async () => {
         try{
             const data = await getCart()
-            dispatch(setItems(data.cart.items))
-            
+            const cartData = data.cart && data.cart.length > 0 ? data.cart[0] : { items: [], totalPrice: 0, currency: 'INR' }
+            dispatch(setCart(cartData))
         }catch(error){
             console.error('Error fetching cart:', error);
             throw error;
         }
+
     }
 
-    const handleUpdateCartQuantity = async (productId, variantId) => {
+    const handleIncrementCartQuantity = async (productId, variantId) => {
         try {
-            const data = await updateCartQuantity(productId, variantId);
+            const data = await incrementCartQuantity(productId, variantId);
+            dispatch(incrementItemQuantity({ productId, variantId }));
             return data;
         } catch (error) {
             console.error('Error updating cart quantity:', error);
@@ -36,5 +38,27 @@ export const useCart = () => {
         }
     }
 
-    return {handleAddToCart, handleGetCart, handleUpdateCartQuantity}
+    const handleDecrementCartQuantity = async (productId, variantId) => {
+        try {
+            const data = await decrementCartQuantity(productId, variantId);
+            dispatch(decrementItemQuantity({ productId, variantId }));
+            return data;
+        } catch (error) {
+            console.error('Error updating cart quantity:', error);
+            throw error;
+        }
+    }
+
+    const handleRemoveItemFromCart = async (productId, variantId) => {
+        try {
+            const data = await removeItemFromCart(productId, variantId);
+            dispatch(removeItem({ productId, variantId }));
+            return data;
+        } catch (error) {
+            console.error('Error removing item from cart:', error);
+            throw error;
+        }
+    }
+        
+    return {handleAddToCart, handleGetCart, handleIncrementCartQuantity, handleDecrementCartQuantity, handleRemoveItemFromCart}
 }

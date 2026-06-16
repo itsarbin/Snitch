@@ -1,4 +1,4 @@
-import {body, validationResult} from 'express-validator';
+import {param, validationResult} from 'express-validator';
 
 function validateRequest(req,res,next){
     const errors = validationResult(req);
@@ -8,8 +8,8 @@ function validateRequest(req,res,next){
     next();
 }
 
-export const validateAddToCart = [
-    body('productId').isMongoId().withMessage('Invalid product ID'),
-    body('variantId').isMongoId().withMessage('Invalid variant ID'),
+export const validateCartItem = [
+    param('productId').isMongoId().withMessage('Invalid product ID'),
+    param('variantId').isMongoId().withMessage('Invalid variant ID'),
     validateRequest
 ]
