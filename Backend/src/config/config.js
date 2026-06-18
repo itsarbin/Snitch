@@ -23,6 +23,12 @@ if(!process.env.IMAGEKIT_PUBLIC_KEY){
 if(!process.env.IMAGEKIT_URL_ENDPOINT){
     throw new Error("IMAGEKIT_URL_ENDPOINT is not defined in environment variables");
 }
+if(!process.env.RAZORPAY_API_KEY){
+    throw new Error("RAZORPAY_API_KEY is not defined in environment variables");
+}
+if(!process.env.RAZORPAY_API_SECRET){
+    throw new Error("RAZORPAY_API_SECRET is not defined in environment variables");
+}
 
 const Config = {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -31,7 +37,9 @@ const Config = {
     JWT_SECRET: process.env.JWT_SECRET,
     IMAGEKIT_PRIVATE_KEY: process.env.IMAGEKIT_PRIVATE_KEY,
     IMAGEKIT_PUBLIC_KEY: process.env.IMAGEKIT_PUBLIC_KEY,
-    IMAGEKIT_URL_ENDPOINT: process.env.IMAGEKIT_URL_ENDPOINT
+    IMAGEKIT_URL_ENDPOINT: process.env.IMAGEKIT_URL_ENDPOINT,
+    RAZORPAY_API_KEY: process.env.RAZORPAY_API_KEY,
+    RAZORPAY_API_SECRET: process.env.RAZORPAY_API_SECRET
 }
 
 export default Config;

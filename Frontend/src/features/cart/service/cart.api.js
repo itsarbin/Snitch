@@ -54,3 +54,17 @@ export const removeItemFromCart = async (productId, variantId) => {
         throw error;
     }
 }
+
+export const createRazorpayOrder = async () => {
+    const response = await cartApi.post('/payment/create-order');
+    return response.data;
+}
+
+export const verifyPayment = async (razorpay_order_id, razorpay_payment_id, razorpay_signature) => {
+    const response = await cartApi.post('/payment/verify', {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+    });
+    return response.data;
+}

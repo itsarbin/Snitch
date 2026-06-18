@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import {authenticateUser} from '../middleware/auth.middleware.js'
-import { addToCart, getCart, incrementCartQuantity, decrementCartQuantity,removeItemFromCart } from '../controller/cart.controller.js'
+import { addToCart, getCart, incrementCartQuantity, decrementCartQuantity,removeItemFromCart, createRazorpayOrder, verifyPayment } from '../controller/cart.controller.js'
 import { validateCartItem } from '../validator/cart.validator.js'
 
 const  router = Router()
@@ -14,6 +14,12 @@ router.patch('/decrement/:productId/:variantId', authenticateUser, validateCartI
 
 //delete item from cart
 router.delete('/remove/:productId/:variantId', authenticateUser, validateCartItem, removeItemFromCart)
+
+//create order razorpay
+router.post('/payment/create-order', authenticateUser, createRazorpayOrder)
+
+//verify payment
+router.post('/payment/verify', authenticateUser, verifyPayment)
 
 
 

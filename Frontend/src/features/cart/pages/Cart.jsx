@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useCart } from '../hook/useCart'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
+import { useRazorpay} from "react-razorpay";
+
 
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────── */
@@ -122,8 +124,12 @@ const ReturnIcon = () => (
    CART PAGE
 ═══════════════════════════════════════════════════════════════════════════════ */
 const Cart = () => {
-  const { handleGetCart, handleIncrementCartQuantity, handleDecrementCartQuantity, handleRemoveItemFromCart } = useCart()
+  const { handleGetCart, handleIncrementCartQuantity, handleDecrementCartQuantity, handleRemoveItemFromCart, handleCreateRazorpayOrder, handleVerifyPayment } = useCart()
   const navigate = useNavigate()
+
+  const user = useSelector((state) => state.auth.user)
+
+   const { error, isLoading, Razorpay } = useRazorpay();
   const cartItems = useSelector((state) => state.cart.items)
   // console.log('Cart items from Redux:', cartItems)  // Debug log
 
@@ -147,6 +153,43 @@ const Cart = () => {
     }
     fetchCart()
   }, [])
+
+  const handleCheckout = async () => {
+  
+    const order = await handleCreateRazorpayOrder()
+    console.log('Razorpay order created:', order)
+
+     const options = {
+      key: "rzp_test_T2TWtOUsfeLpyN",
+      amount: order.amount, // Amount in paise
+      currency: order.currency,
+      name: "Snitch",
+      description: "Secure payment for your order",
+      order_id: order.id, // Generate order_id on server
+      handler: async (response) => {
+        const verifyResponse = await handleVerifyPayment(
+          response.razorpay_order_id,
+          response.razorpay_payment_id,
+          response.razorpay_signature
+        )
+        if (verifyResponse?.success) {
+          navigate(`order-sucess?orderId=${response.razorpay_order_id}`)
+          
+        }
+      },
+      prefill: {
+        name: user?.name || "John Doe",
+        email: user?.email || "john.doe@example.com",
+        contact: user?.phone || "9999999999",
+      },
+      theme: {
+        color: "#F37254",
+      },
+    };
+
+    const razorpayInstance = new Razorpay(options);
+    razorpayInstance.open();
+  };
 
   /* ── quantity update ──────────────────────────────────────────────────── */
   const handleIncrementChange = async (item, delta) => {
@@ -537,10 +580,10 @@ const Cart = () => {
                 </div>
 
                 {/* Tax */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontFamily: dmSans, fontSize: '13px', color: C.walnut, fontWeight: 400 }}>Tax (5%)</span>
                   <span style={{ fontFamily: dmSans, fontSize: '13px', color: C.espresso, fontWeight: 500 }}>{formatPrice(tax)}</span>
-                </div>
+                </div> */}
               </div>
 
               {/* Divider */}
@@ -562,7 +605,7 @@ const Cart = () => {
               {/* Checkout button */}
               <button
                 id="cart-checkout-btn"
-                onClick={() => navigate('/checkout')}
+                onClick={() => handleCheckout()}
                 disabled={cartItems.length === 0}
                 onMouseEnter={() => setHoverChk(true)}
                 onMouseLeave={() => setHoverChk(false)}

@@ -1,4 +1,4 @@
-import {addToCart, getCart, incrementCartQuantity, decrementCartQuantity, removeItemFromCart} from '../service/cart.api'
+import {addToCart, getCart, incrementCartQuantity, decrementCartQuantity, removeItemFromCart, createRazorpayOrder, verifyPayment} from '../service/cart.api'
 import {setCart,addItem, incrementItemQuantity, decrementItemQuantity, removeItem} from '../state/cart.slice'
 import {useDispatch} from 'react-redux'
 
@@ -59,6 +59,26 @@ export const useCart = () => {
             throw error;
         }
     }
-        
-    return {handleAddToCart, handleGetCart, handleIncrementCartQuantity, handleDecrementCartQuantity, handleRemoveItemFromCart}
+     
+    const handleCreateRazorpayOrder = async () => {
+        try {
+            const data = await createRazorpayOrder();
+            return data.order;
+        } catch (error) {
+            console.error('Error creating Razorpay order:', error);
+            throw error;
+        }
+    }
+
+    const handleVerifyPayment = async (razorpay_order_id, razorpay_payment_id, razorpay_signature) => {
+        try {
+            const data = await verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+            return data;
+        } catch (error) {
+            console.error('Error verifying payment:', error);
+            throw error;
+        }
+    }
+
+    return {handleAddToCart, handleGetCart, handleIncrementCartQuantity, handleDecrementCartQuantity, handleRemoveItemFromCart, handleCreateRazorpayOrder, handleVerifyPayment}
 }
